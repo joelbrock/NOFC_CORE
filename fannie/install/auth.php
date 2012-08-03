@@ -69,8 +69,12 @@ else{
 	confset('FANNIE_AUTH_ENABLED','False');
 	echo "<option>Yes</option><option selected>No</option>";
 }
+echo "</select>";
+
 if ($FANNIE_AUTH_ENABLED){
 	include("../auth/utilities.php");
+	include('../auth/login.php');
+	
 	table_check(); // create user tables
 
 	// if no users exist, offer to create one
@@ -92,15 +96,14 @@ if ($FANNIE_AUTH_ENABLED){
 			$FANNIE_AUTH_ENABLED = True;
 		}
 		if (!$success){
-			echo "<i>No users defined. To create an initial admin user,
-				enter a username and password below</i><br />";
+			echo "<p><i>No users defined. To create an initial admin user,
+				enter a username and password below</i></p>";
 			echo 'Username: <input type="text" name="newuser" /><br />';
 			echo 'Password: <input type="password" name="newpass" /><br />';
 		}
 	}
 }
 ?>
-</select>
 <hr />
 <b>Allow shadow logins</b>
 <select name=FANNIE_AUTH_SHADOW>
