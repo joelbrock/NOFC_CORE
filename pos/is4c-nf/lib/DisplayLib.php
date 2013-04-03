@@ -152,7 +152,7 @@ static public function printfooter($readOnly=False) {
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
 	$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
 	if ($CORE_LOCAL->get("isMember") == 1) {
-		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special + $CORE_LOCAL->get("memCouponTTL"), 2);
+		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special, 2);
 		if (!$readOnly){
 			$CORE_LOCAL->set("yousaved",$dblyousaved);
 			$CORE_LOCAL->set("couldhavesaved",0);
@@ -176,8 +176,8 @@ static public function printfooter($readOnly=False) {
 
 	/* 5/11/12
 	$strperdiscount = "n/a";
-	if ($CORE_LOCAL->get("percentDiscount") != 0 || $CORE_LOCAL->get("memCouponTTL") > 0) {
-		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL"), 2);
+	if ($CORE_LOCAL->get("percentDiscount") != 0) {
+		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount"), 2);
 	}
 
 	$strmemSpecial = "n/a";
@@ -194,7 +194,7 @@ static public function printfooter($readOnly=False) {
 			$CORE_LOCAL->set("waitforScale",0);
 			$CORE_LOCAL->set("beep","noBeep");
 		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
+		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
 			MiscLib::rePoll();
 		}
 		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
@@ -349,6 +349,7 @@ static public function inputUnknown() {
 static public function printheaderb() {
 	global $CORE_LOCAL;
 
+	$strmemberID = "";
 	if ($CORE_LOCAL->get("memberID") == "0") {
 		$strmemberID = "";
 	}
@@ -547,6 +548,8 @@ static public function scaledisplaymsg($input=""){
 	global $CORE_LOCAL;
 	$reginput = trim(strtoupper($input));
 
+	$scans = '';
+	
 	// return early; all other cases simplified
 	// by resetting session "weight"
 	if (strlen($reginput) == 0) {
@@ -578,6 +581,9 @@ static public function scaledisplaymsg($input=""){
 			$CORE_LOCAL->set("weight",$weight);
 			$display_weight = $weight." lb";
 			$CORE_LOCAL->set("scale",1);
+			if ($CORE_LOCAL->get('SNR') != 0 && $weight != 0){
+				$scans = $CORE_LOCAL->get('SNR');
+			}
 		}
 	}
 	elseif (substr($reginput, 0, 4) == "S143") {
@@ -597,7 +603,10 @@ static public function scaledisplaymsg($input=""){
 		$display_weight = "? ? ? ?";
 	}
 
-	return $display_weight;
+	$ret = array('display'=>$display_weight);
+	if (!empty($scans)) $ret['upc'] = $scans;
+
+	return $ret;
 }
 
 /**
@@ -709,8 +718,6 @@ static public function drawitems($top_item, $rows, $highlight) {
 	$row = $db->fetch_array($result);
 	$rowCount = $row["count"];
 
-	$db->close();
-
 	$last_item = array();
 
 	if ($rowCount == 0) {
@@ -777,7 +784,6 @@ static public function drawitems($top_item, $rows, $highlight) {
 				$last_item[] = $fixed_desc.$spaces.$fixed_price;
 			}
 		}
-		$db_range->close();
 	}
 
 	$td = SigCapture::term_object();

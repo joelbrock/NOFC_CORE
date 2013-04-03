@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+header('Location: NonMovementReport.php');
+exit;
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');

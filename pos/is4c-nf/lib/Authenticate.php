@@ -55,18 +55,19 @@ static public function check_password($password,$activity=1){
 	if ($password == "TRAINING") $password = 9999; // if password is training, change to '9999'
 
 	if (!is_numeric($password)) return False; // if password is non-numeric, not a valid password
-	elseif ($password > 9999 || $password < 1) return False; // if password is greater than 4 digits or less than 1, not a valid password
+	elseif ($password < 1) return False; // if password is less than 1, not a valid password
 
 	$query_g = "select LoggedIn,CashierNo from globalvalues";
 	$db_g = Database::pDataConnect();
 	$result_g = $db_g->query($query_g);
 	$row_g = $db_g->fetch_array($result_g);
+	$password = $db_g->escape($password);
 
 	if ($row_g["LoggedIn"] == 0) {
 		$query_q = "select emp_no, FirstName, LastName, "
 			.$db_g->yeardiff($db_g->now(),'birthdate')." as age "
 			."from employees where EmpActive = 1 "
-			."and CashierPassword = ".$password;
+			."and CashierPassword = '".$password."'";
 		$result_q = $db_g->query($query_q);
 		$num_rows_q = $db_g->num_rows($result_q);
 
@@ -91,7 +92,25 @@ static public function check_password($password,$activity=1){
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
-			ReceiptLib::drawerKick();
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0){ 
+					ReceiptLib::assignDrawer($row_q['emp_no'],$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer($row_q['emp_no'],$my_drawer);
+
+			/**
+			  Use Kicker object to determine whether the drawer should open
+			  The first line is just a failsafe in case the setting has not
+			  been configured.
+			*/
+			$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+			$kicker_object = new $kicker_class();
+			if ($kicker_object->kickOnSignIn())
+				ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -107,6 +126,17 @@ static public function check_password($password,$activity=1){
 				"LoggedIn" => 1
 			);
 			Database::setglobalvalues($globals);
+
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0) {
+					ReceiptLib::assignDrawer(9999,$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer(9999,$my_drawer);
+			
 		}
 		else return False;
 	}
@@ -137,11 +167,11 @@ static public function check_password($password,$activity=1){
 		else return False;
 	}
 
-	$db_g->db_close();
-	
 	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
 		$CORE_LOCAL->set("unlock",1);
-		PrehLib::memberID($CORE_LOCAL->get("memberID"));
+		/* not sure why this is here; andy 13Feb13 */
+		/* don't want to clear member info via this call */
+		//PrehLib::memberID($CORE_LOCAL->get("memberID"));
 	}
 	$CORE_LOCAL->set("inputMasked",0);
 

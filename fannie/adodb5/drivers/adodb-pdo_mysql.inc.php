@@ -10,6 +10,9 @@ V5.09 25 June 2009   (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reser
  
 */ 
 
+if (!class_exists('ADODB_pdo'))
+	include(dirname(__FILE__).'/adodb-pdo.inc.php');
+
 class ADODB_pdo_mysql extends ADODB_pdo {
 	var $metaTablesSQL = "SHOW TABLES";	
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
@@ -28,6 +31,12 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		#$parentDriver->_bindInputArray = false;
 		$parentDriver->hasInsertID = true;
 		$parentDriver->_connectionID->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,true);
+	}
+
+	function _connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist=false){
+		if (substr($argDSN,0,6) !== "mysql:")
+			$argDSN = "mysql:host=".$argDSN;
+		return parent::_connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist);
 	}
 	
 		// dayFraction is a day in floating point
@@ -164,6 +173,14 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 			return $retarr;	
 	}
 		
+	// returns true or false
+	function SelectDB($dbName) 
+	{
+		$this->database = $dbName;
+		$this->databaseName = $dbName; # obsolete, retained for compat with older adodb versions
+		$try = $this->Execute('use '.$dbName);
+		return ($try !== false) ? true : false;
+	}
 	
 	// parameters use PostgreSQL convention, not MySQL
 	function SelectLimit($sql,$nrows=-1,$offset=-1,$inputarr=false,$secs=0)
