@@ -458,7 +458,7 @@ static public function classic_tender($right, $strl) {
 	$CORE_LOCAL->set("tenderamt",$strl);
 	$unit_price = 0;
 
-	if ($tender_code == "FS") {
+	if ($tender_code == "FS" && $CORE_LOCAL->get("store") == "WFC") {
 		$CORE_LOCAL->set("boxMsg",_("WFC no longer excepts paper foods stamps. Please choose a different tender type"));
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
