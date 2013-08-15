@@ -67,9 +67,6 @@ if ($entered != ""){
 			$CORE_LOCAL->set("strEntered","");
 			$json = $valid;
 		}
-
-		$CORE_LOCAL->set("quantity",0);
-		$CORE_LOCAL->set("multiple",0);
 	}
 
 	$CORE_LOCAL->set("quantity",0);
@@ -134,7 +131,7 @@ if ($entered != ""){
 
 $CORE_LOCAL->set("msgrepeat",0);
 
-if (empty($json)) $json = "{}";
+if (empty($json)) echo "{}";
 else {
 	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
 		if ($CORE_LOCAL->get("away") == 1)
@@ -148,6 +145,9 @@ else {
 			$json['scale'] = $display['display'];
 		else
 			$json['scale'] = $display;
+		$term_display = DisplayLib::termdisplaymsg();
+		if (!empty($term_display))
+			$json['term'] = $term_display;
 	}
 	echo JsonLib::array_to_json($json);
 }

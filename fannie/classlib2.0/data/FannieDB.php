@@ -47,6 +47,8 @@ class FannieDB {
 		elseif (!isset(self::$db->connections[$db_name]))
 			self::add_db($db_name);
 
+		self::$db->default_db = $db_name;
+		self::$db->query('use '.$db_name);
 		return self::$db;
 	}
 

@@ -31,9 +31,7 @@
 */
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class VendorIndexPage extends FanniePage {
 
@@ -107,6 +105,8 @@ class VendorIndexPage extends FanniePage {
 		}
 		$ret .= "<br />";
 		$ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Update vendor catalog</a>";
+		$ret .= "<br />";
+		$ret .= "<a href=\"UploadPluMapPage.php?vid=$id\">Update PLU/SKU mapping</a>";
 		$ret .= "<p />";
 
 		$itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorDepartments WHERE vendorID=?");

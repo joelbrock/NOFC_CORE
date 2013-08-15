@@ -77,6 +77,7 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
+	$CORE_LOCAL->set('ccTermState','swipe');
 	$CORE_LOCAL->set("inputMasked",0);
 
 	/**
@@ -160,6 +161,8 @@ static public function transReset() {
 	$CORE_LOCAL->set("CachePanEncBlock","");
 	$CORE_LOCAL->set("CachePinEncBlock","");
 	$CORE_LOCAL->set("CacheCardType","");
+	$CORE_LOCAL->set("CacheCardCashBack",0);
+	$CORE_LOCAL->set('ccTermState','swipe');
 	$CORE_LOCAL->set("paycard_voiceauthcode","");
 	$CORE_LOCAL->set("ebt_authcode","");
 	$CORE_LOCAL->set("ebt_vnum","");
@@ -336,6 +339,18 @@ static public function getCustomerPref($key){
 	if ($r === False) return '';
 	if ($db->num_rows($r) == 0) return '';
 	return array_pop($db->fetch_row($r));
+}
+
+static public function cashier_login($transno=False, $age=0){
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get('CashierNo')==9999){
+		$CORE_LOCAL->set('training', 1);
+	}
+	if (!is_numeric($age)) $age = 0;
+	$CORE_LOCAL->set('cashierAge', $age);
+	if($transno && is_numeric($transno)){
+		$CORE_LOCAL->set('transno', $transno);
+	}
 }
 
 }

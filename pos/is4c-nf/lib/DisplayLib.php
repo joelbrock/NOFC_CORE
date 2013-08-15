@@ -194,7 +194,7 @@ static public function printfooter($readOnly=False) {
 			$CORE_LOCAL->set("waitforScale",0);
 			$CORE_LOCAL->set("beep","noBeep");
 		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
+		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
 			MiscLib::rePoll();
 		}
 		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
@@ -336,7 +336,7 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
 */
 static public function inputUnknown() {
 	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif");
+			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif",True);
 }
 
 //--------------------------------------------------------------------//
@@ -549,7 +549,7 @@ static public function scaledisplaymsg($input=""){
 	$reginput = trim(strtoupper($input));
 
 	$scans = '';
-	
+
 	// return early; all other cases simplified
 	// by resetting session "weight"
 	if (strlen($reginput) == 0) {
@@ -610,6 +610,39 @@ static public function scaledisplaymsg($input=""){
 }
 
 /**
+  Display CC terminal state
+  @return HTML string
+*/
+static public function termdisplaymsg(){
+	global $CORE_LOCAL;
+	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList")))
+		return '';
+	elseif($CORE_LOCAL->get("PaycardsCashierFacing")=="1")
+		return '';
+	// style box to look like a little screen
+	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+	switch($CORE_LOCAL->get('ccTermState')){
+	case 'swipe':
+		return $ret.'Slide<br />Card</div>';
+		break;
+	case 'ready':
+		return $rdy.'Ready</div>';
+		break;
+	case 'pin':
+		return $ret.'Enter<br />PIN</div>';
+		break;
+	case 'type':
+		return $ret.'Card<br />Type</div>';
+		break;
+	case 'cashback':
+		return $ret.'Cash<br />Back</div>';
+		break;
+	}
+	return '';
+}
+
+/**
   Get the items currently on screen
   @param $top_item is trans_id (localtemptrans)
    of the first item to display
@@ -650,8 +683,8 @@ static public function listitems($top_item, $highlight) {
 
 //------------------Boundary Bottom----------------
 
-	return self::drawitems($top_item, 11, $highlight);
 	$CORE_LOCAL->set("currentid",$highlight);
+	return self::drawitems($top_item, 11, $highlight);
 }
 
 
@@ -691,6 +724,11 @@ static public function printReceiptfooter($readOnly=False) {
 		for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
 			$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
 		}
+
+		$email = CoreState::getCustomerPref('email_receipt');
+		$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+		if($doEmail) $ret .= 'receipt emailed';
+
 		$ret .= "</div>";
 		return $ret;
 	}

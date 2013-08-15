@@ -23,6 +23,22 @@
 
 /* #'Z--COMMENTZ { -  - - - - - - - - - - - - - - - - - - - - - -
 
+	20Jun13	7-digit PLU in UPC field.
+	        Flag empty case_cost if hasPrice.
+	19Jun13	ORDER_CODE to seven digits from five.
+	        Allow for decimal-number CASE_SIZE when UNIT_COST not supplied.
+			     Used for BULK, where "case" is treated as a container of CASE_SIZE pounds.
+					  CASE_COST is cost of that.
+					  UNIT_SIZE is 1, UNIT_NAME lb.  For things sold by weight.
+			     If $size, from CASE_SIZE, is not an integer, e.g. for BULK, vendorItems.units winds up NULL.
+					  Other uses of $size not as problematic, AFAIK.
+			     This may need to be addressed one day.
+	17Jun13	Some real changes. remove $upcProblem, $local references.
+	14Jun13	Just some expendable debug messages, commented at this point.
+	30Apr13	- ORDER_CODE in D, SKU to Y.
+	        o Qualifications flags in AJ-BN assigned to bits of products.numflag.
+	        o Drop use of products_WEFC_Toronto.km100, ontario, canada
+	        o Put ORDER_CODE in products_WEFC_Toronto.order_code
 	23Mar13	+ vendorItem.cost s/N/b case_cost as in prodExtra; revert to unit_cost
           + A non-manual control of checking for dev_side for add-to-vendors.
 	16Mar12 Add unknown vendorID to vendors; should only do dev_side. Manual.
@@ -239,12 +255,13 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 
 		/* Indexes to the array returned by csv_parser, the column number in the .csv file.
 			"first" = 0.
+		{
 		*/
 		$UPC = 0;								// G:A:0 "Supplier UPC". UPC or PLU.
 		$SEARCH = 1;						// B:B:1 search_description, for productUser.description
 //	$STD = 1;								// B:B:1 STD y/n "in use". Values?
 		$VENDOR_NAME = 2;				// E:C:2 Distributor
-		$SKU = 3;								// A:D:3 SKU
+		$ORDER_CODE = 3;				// -:D:3 ORDER_CODE, from Buying system
 		$DEPT_NAME = 4;					// F:E:4 Department
 		$BRAND_NAME = 5;				// C:F:5 Brand deptMargin.dept_ID
 // 14Jan13 PRODUCER_MEMBER  apparently dropped.
@@ -269,8 +286,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 //
 // 15Feb13 New.
 		$DISCOUNTABLE = 12;			// -:M:12 Item discountable 0=no 1=yes
-// N not used here
-//		$DISCOUNT_TYPE = 13;		// -:N:13 Whether to use "special" i.e. sale prices and for which kind of customer:
+		$DISCOUNT_TYPE = 13;		// -:N:13 Whether to use "special" i.e. sale prices and for which kind of customer:
 /*
 discounttype indicates if an item is on sale
 	0 => not on sale
@@ -279,10 +295,9 @@ discounttype indicates if an item is on sale
 Values greater than 2 may be used, but results will
 vary based on whose code you're running
 */
-
 		$DESCRIPTION = 14;			// D:O:14 Item
 		$CASE_COST = 15;				// H:P:15 "Case Cost" 9999.99
-		$CASE_SIZE = 16;				// J:Q:16 "Case Size" 99
+		$CASE_SIZE = 16;				// J:Q:16 "Case Size" 99, but 99.9999 pounds per container for bulk
 		$UNIT_SIZE = 17;				// K:R:17 "Unit Size" 99 
 		$UNIT_NAME = 18;				// L:S:18 "Units "g"/"ml"/"bags"
 		$UNIT_COST = 19;				// M:T:19 Cost per Unit 999.99 "Cost"
@@ -292,21 +307,20 @@ vary based on whose code you're running
 //
 		$TAX_TYPE = 22;					// R:W:22 Tax 0/1/2 "Taxes"
 		$MARKUP = 23;						// S:X:23 Markup "150%" -> 1.42 "Markup"
-// :Y-AC are superdepts
-		$CATEGORY_SD = 27;			// W:AB:27 Category SuperDept.
+		$SKU = 24;							// D:Y:24 Vendor SKU
+//
+		$SALE_PRICE = 25;				// Z:25 "Sale Price"
+		$SALE_COST = 26;				// AA:26 "Sale Cost"
+		$TEMP_COST = 27;				// AB:27 "Temp Cost" ? Case sale price.
+//
+		$CATEGORY_SD = 28;			// W:AC:28 Category SuperDept.
 //
 		$SCALE = 30;						// Z:AE:30 BULK. "BULK" means scale=1
 		$VENDOR_ID = 34;				// AE:AI:34 Vendor ID.
 //
-// 17Jan13 Removed obsolete code that refers to this.
-//		$OVERRIDE_PRICE = 35;		// T:AJ:35 Override Price <- Doesn't exist. Dummy
-//
-		$SALE_PRICE = 38;				// Q:AM:38 "Sale Price"
-		$SALE_COST = 39;				// P:AN:39 "Sale Cost"
-		$TEMP_COST = 40;				// I:AO:40 "Temp Cost" ? Case sale price.
-//-- :End
-	//	$ONTARIO = 19;					// T YES/NO/"" (very few examples)
-	//	$CANADA = 20;						// U YES/NO/"" (very few examples)
+// 30Apr13 Columns AJ/35 - BN/64 are for Qualification flags.
+//         "" means not-assigned, probably implies No. 0=No 1=Yes
+//-- :End }
 
 
 		// Defaults for:
@@ -390,6 +404,9 @@ vary based on whose code you're running
 		// Known in products.  Only matters if !$hasPrice
 		$inProducts = 0;
 
+		// Order code
+		$order_code = 'NULL';
+
 		// #'L --LOOP - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		$fp = fopen($tpath.$current,'r');
 		while( !feof($fp) ) {
@@ -436,19 +453,17 @@ vary based on whose code you're running
 			if ( $data[$UPC] == "" ) {
 				$messages[++$mct] = "<br />Skipping line $lineCount {$data[$DESCRIPTION]} because it has no UPC/PLU.";
 				continue;
-			} else {
-				$upc = $data[$UPC];
 			}
 
+			$upc = $data[$UPC];
 			// Incoming data is expected to be %012d and UPC's have checkdigit at the end which must be removed.
 			// Check for the expected base format.
 			if ( ! preg_match("/^\d{12}/", $upc) ) {
-				$messages[++$mct] = "<br />Skipping line $lineCount {$data[$DESCRIPTION]} because its UPC >{$upc}<is not 12 digits.";
-				$upcProblem++;
+				$messages[++$mct] = "<br />Skipping line $lineCount {$data[$DESCRIPTION]} because its UPC &gt;{$upc}&lt; is not 12 digits.";
 				continue;
 			} else {
-				// If it's a PLU (4 or maybe 5 digits with left-0 padding), leave as-is.
-				if ( ! preg_match("/^0{7}/", $upc) ) {
+				// If it's a PLU (up to 7 digits with left-0 padding), leave as-is.
+				if ( ! preg_match("/^0{5}/", $upc) ) {
 					// Remove checkdigit.
 					$upc = substr($upc, 0, 11);
 				}
@@ -463,6 +478,20 @@ vary based on whose code you're running
 					$messages[++$mct] = "<br />Skipping line $lineCount upc duplicate: $upc for all tables.";
 					continue;
 				}
+			}
+
+			if ( $data[$ORDER_CODE] == '' ) {
+				$order_code = 'NULL';
+			} elseif ( is_numeric($data[$ORDER_CODE]) ) {
+				if ( $data[$ORDER_CODE] <= 9999999 ) {
+					$order_code = $data[$ORDER_CODE];
+				} else {
+					$messages[++$mct] = "<br />Order number >{$data[$ORDER_CODE]}< for upc: $upc is too long; set to NULL.";
+					$order_code = 'NULL';
+				}
+			} else {
+				$messages[++$mct] = "<br />Order number >{$data[$ORDER_CODE]}< for upc: $upc is not numeric; set to NULL.";
+				$order_code = 'NULL';
 			}
 
 			// PV description defaults to receipt description
@@ -528,7 +557,8 @@ vary based on whose code you're running
 			if ( $data[$MARKUP] == "#NAME?" ) {
 				$data[$MARKUP] = "";
 			}
-			if ( is_numeric($data[$MARKUP]) != "" ) {
+			//if ( is_numeric($data[$MARKUP]) != "" ) {}
+			if ( is_numeric($data[$MARKUP]) ) {
 				$margin = sprintf("%.5f",(($data[$MARKUP]-1)/$data[$MARKUP]));
 				//$messages[++$mct] = "Line $lineCount created margin $margin";
 				/* From when we were markup-based.
@@ -600,10 +630,14 @@ vary based on whose code you're running
 				} else {
 					$inProducts = 0;
 				}
+//$messages[++$mct] = "No price upc: $upc inProducts: $inProducts";
+//echo "<br />$messages[$mct]";
 			} else {
 				$hasPrice = 1;
 			}
 
+			// 20Jun13 Bulk does have CASE_COST, the cost of the bulk container,
+			//          but keep testing SET_PRICE.
 			// 24Jan13 Change test to SET_PRICE because for bulk there is no CASE_COST.
 			// 17Jan13 CASE_COST tests moved here.
 			/* Skip the item if case-cost isn't numeric
@@ -612,14 +646,18 @@ vary based on whose code you're running
 					we can't be certain *when* that chunk will come up
 			*/
 			if ( $hasPrice && !is_numeric($data[$SET_PRICE]) ) {
-				$messages[++$mct] = "<br />Line $lineCount skipping invalid case-cost: >{$data[$SET_PRICE]}<";
-				//echo "$messages[$mct]";
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because of invalid price (col V): >{$data[$SET_PRICE]}<";
+				continue;
+			}
+
+			if ( $hasPrice && empty($data[$CASE_COST]) ) {
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because of no case cost (col P): >{$data[$CASE_COST]}<";
 				continue;
 			}
 
 			// Treat CASE_COST == -1 as flag for data known to be incomplete and skip and note.
 			if ( $data[$CASE_COST] == -1 ) {
-				$messages[++$mct] = "<br />Line $lineCount skipping flagged-as-incomplete item >{$data[$CASE_COST]}<";
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because flagged-as-incomplete item >{$data[$CASE_COST]}<";
 				$incompletes++;
 				continue;
 			}
@@ -646,9 +684,6 @@ vary based on whose code you're running
 				$data[$UNIT_COST] = sprintf("%.2f", $data[$UNIT_COST]);
 			}
 
-			// 17Jan13 Earlier versions support this now-unused field as first choice for normal_price.
-			//if ( is_numeric($data[$OVERRIDE_PRICE]) ) {}
-
 			// If price not supplied skip the assignments that involve it
 			//  but still assign $size.
 			// Prefer the pre-calculated or pre-set price
@@ -674,13 +709,19 @@ vary based on whose code you're running
 						echo "1. $lineCount upc >{$upc}<  dept_no {$department} SET_PRICE: {$data[$SET_PRICE]} normal_price >{$normal_price}< normal_price2 >{$normal_price2}<";
 					}
 				}
-				// If no pre-set, then calculate.
-				elseif ( preg_match("/^\d+\.\d\d$/",$data[$CASE_COST]) && preg_match("/^\d+$/",$data[$CASE_SIZE]) && preg_match("/^\d\.\d+$/",$margin) ) {
-					// Markup-based price
-					$normal_price = sprintf("%.2f", ((($data[$CASE_COST] * 100) / ($data[$CASE_SIZE] * 100)) / (1 - $margin)));
-					/* Markup-based price
-					$normal_price = sprintf("%.2f", ((($data[$CASE_COST] * 100) / ($data[$CASE_SIZE] * 100)) * $margin));
-					*/
+				// If no pre-set, or no unit_cost then calculate as needed.
+				elseif ( preg_match("/^\d+\.\d\d$/",$data[$CASE_COST]) &&
+								(preg_match("/^\d+$/",$data[$CASE_SIZE]) || preg_match("/^\d+\.\d+$/",$data[$CASE_SIZE])) &&
+								 preg_match("/^\d\.\d+$/",$margin) ) {
+					if ( preg_match("/^\d+\.\d\d$/",$data[$SET_PRICE]) ) {
+						$normal_price = $data[$SET_PRICE];
+					} else {
+						// Markup-based price
+						$normal_price = sprintf("%.2f", ((($data[$CASE_COST] * 100) / ($data[$CASE_SIZE] * 100)) / (1 - $margin)));
+						/* Markup-based price
+						$normal_price = sprintf("%.2f", ((($data[$CASE_COST] * 100) / ($data[$CASE_SIZE] * 100)) * $margin));
+						*/
+					}
 					$cost = sprintf("%.2f", (($data[$CASE_COST] * 100) / ($data[$CASE_SIZE] * 100)));
 					$size = $data[$CASE_SIZE];
 					//echo "<br />2. $lineCount upc >{$upc}<  dept_no {$department} SET_PRICE: {$data[$SET_PRICE]}  *normal_price >{$normal_price}<";
@@ -689,9 +730,8 @@ vary based on whose code you're running
 					continue;
 				}
 			} else {
-				if ( preg_match("/^\d+$/",$data[$CASE_SIZE]) ) {
+				if ( preg_match("/^\d+$/",$data[$CASE_SIZE]) || preg_match("/^\d+\.\d+$/",$data[$CASE_SIZE]) )
 					$size = $data[$CASE_SIZE];
-				}
 			}
 
 			// May need some massaging/regularization: mL -> ml, gm -> g, ...
@@ -722,16 +762,11 @@ vary based on whose code you're running
 				$messages[++$mct] = "<br />Line $lineCount missing normal_price when pricemethod = 2";
 			}
 
-			/* 25Sep12 These values no longer captured at this point.
-			           See earlier versions of program for how it was done.
-			*/
-			$local = 0; $canada = 0; $ontario = 0;
-
-			$local = -1; $canada = -1; $ontario = -1;
-
 			if ( !$hasPrice && $inProducts ) {
 				$dbMode = "update";
 				$updateCount++;
+//$messages[++$mct] = "No price upc: $upc inProducts: $inProducts dmMode: $dbmode\n";
+//echo "<br />$messages[$mct]";
 			}
 			else {
 				$dbMode = "add/replace";
@@ -768,6 +803,20 @@ vary based on whose code you're running
 			}
 
 
+			/* Qualifications flags
+			*/
+			// Offset of first qualifications flag in $data
+			$first_flag = 35;
+			$numflag = 0;
+			//echo "Start: $numflag\n";
+			for ($i=0 ; $i<30 ; $i++) {
+				if (
+					array_key_exists(($first_flag+$i), $data) &&
+					preg_match("/^(1|yes|y|t|true|x)$/", strtolower($data[$first_flag+$i]))
+				)
+					$numflag = $numflag | (1 << $i);
+			}
+
 			/* All problems should be in $messages[] at this point.
 			*/
 			if ( isset($_REQUEST['dry_run']) ) {
@@ -792,7 +841,7 @@ vary based on whose code you're running
 		3			specialgroupprice, specialquantity, start_date, end_date, department, 
 		4			size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
 		5			tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
-		6			idEnforced, cost, inUse, numflag, subdept, deposit, local)
+		6			idEnforced, cost, inUse, numflag, subdept, deposit)
 		1			VALUES (%s, %s, %.2f,
 		2			%d, %.2f, %d, .0, 0,
 		3			.0, 0, '1900-01-01', '1900-01-01', %d,
@@ -804,14 +853,14 @@ vary based on whose code you're running
 		3			$department,
 		4			$dbc->escape($unitsize), $tax, $fs, $scale, $dbc->escape($mixmatchcode), $dbc->now(),
 		5			$discount, $unitofmeasure, $qttyEnforced,
-		6			$cost, $inUse, $local
+		6			$cost, $inUse
 
 	1			upc, description, normal_price, 
 	2				pricemethod, groupprice, quantity, $special_price=0; $specialpricemethod=0; 
 	3				$specialgroupprice=0; $specialquantity=0; $start_date="'1900-01-01'"; $end_date="'1900-01-01'"; department, 
 	4				size, tax, foodstamp, scale, $scaleprice=0; mixmatchcode, modified, $advertised=0; 
 	5				$tareweight=0; discount, $discounttype=0; unitofmeasure, $wicable=0; qttyEnforced, 
-	6				$idEnforced=0; cost, inUse, $numflag=0; $subdept=0; $deposit=0; local)
+	6				$idEnforced=0; cost, inUse, $numflag=0; $subdept=0; $deposit=0)
 		);
 				*/
 
@@ -843,19 +892,19 @@ vary based on whose code you're running
 					specialgroupprice, specialquantity, start_date, end_date, department, 
 					size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
 					tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
-					idEnforced, cost, inUse, numflag, subdept, deposit, local)
+					idEnforced, cost, inUse, numflag, subdept, deposit)
 					VALUES (%s, %s, %.2f,
 					%d, %.2f, %d, %.2f, %d,
 					%.2f, %d, %s, %s, %d,
 					%s, %d, %d, %d, %.2f, %s, %s, %d,
 					%.2f, %d, %d, %s, %d, %d,
-					%d, %.2f, %d, %d, %d, %.2f, %d)",
+					%d, %.2f, %d, %d, %d, %.2f)",
 					$dbc->escape($upc), $dbc->escape($description), $normal_price,
 					$pricemethod, $groupprice, $quantity, $special_price, $specialpricemethod,
 					$specialgroupprice, $specialquantity, $start_date, $end_date, $department,
 					$dbc->escape($unitsize), $tax, $fs, $scale, $scaleprice, $dbc->escape($mixmatchcode), $dbc->now(), $advertised,
 					$tareweight, $discount, $discounttype, $dbc->escape($unitofmeasure), $wicable, $qttyEnforced,
-					$idEnforced, $cost, $inUse, $numflag, $subdept, $deposit, $local);
+					$idEnforced, $cost, $inUse, $numflag, $subdept, $deposit);
 
 	/* Woodshed
 				$insQ = sprintf("INSERT INTO products (upc, description, normal_price, 
@@ -863,7 +912,7 @@ vary based on whose code you're running
 					specialgroupprice, specialquantity, start_date, end_date, department, 
 					size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
 					tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
-					idEnforced, cost, inUse, numflag, subdept, deposit, local)
+					idEnforced, cost, inUse, numflag, subdept, deposit)
 					VALUES (%s, %s, %.2f,
 					%d, %.2f, %d, %.2f, %d,
 	3				%.2f, %d, %s, %s, %d,
@@ -899,8 +948,7 @@ vary based on whose code you're running
 	$cost, $inUse,
 	$numflag=0;// %d
 	$subdept=0;// %d
-	$deposit=0;	// %.2f
-	$local);
+	$deposit=0);	// %.2f
 	//woodshed
 	*/
 
@@ -925,8 +973,7 @@ vary based on whose code you're running
 					discount = $discount,
 					unitofmeasure = " . $dbc->escape($unitofmeasure) . ",
 					qttyEnforced = $qttyEnforced,
-					inUse = $inUse,
-					local = $local
+					inUse = $inUse
 				WHERE upc=".$dbc->escape($upc);
 
 				if ( $updQ == "" ) {
@@ -991,7 +1038,6 @@ vary based on whose code you're running
 
 			/* #'T --products_WEFC_Toronto - - - - */
 			$table = "products_WEFC_Toronto";
-			$km100 = "NULL";
 
 			if ( $dbMode == "add/replace" ) {
 
@@ -999,11 +1045,11 @@ vary based on whose code you're running
 				$dbc->query("DELETE FROM products_WEFC_Toronto WHERE upc=".$dbc->escape($upc));
 			}
 
-			$insQ = sprintf("INSERT INTO products_WEFC_Toronto (upc, km100, ontario, canada,
+			$insQ = sprintf("INSERT INTO products_WEFC_Toronto (upc, order_code,
 				description, search_description)
-				VALUES (%s, %s, %d, %d,
+				VALUES (%s, %s,
 				%s, %s)",
-				$dbc->escape($upc), $km100, $ontario, $canada,
+				$dbc->escape($upc), $order_code,
 				$dbc->escape($data[$DESCRIPTION]), $dbc->escape($data[$SEARCH])
 				);
 
@@ -1013,10 +1059,10 @@ vary based on whose code you're running
 			}
 			else {
 				$updQ = sprintf("UPDATE products_WEFC_Toronto SET
-					km100 = %d, ontario = %d, canada = %d,
+					order_code = %s,
 					description = %s, search_description = %s
 				WHERE upc=%s",
-				$km100, $ontario, $canada,
+				$order_code,
 				$dbc->escape($data[$DESCRIPTION]), $dbc->escape($data[$SEARCH]),
 				$dbc->escape($upc));
 
@@ -1040,7 +1086,9 @@ vary based on whose code you're running
 			// Use productUser.sizing for size: "300 ml"
 			// Use unitsize for units: 500, e.g. grams. Not the case size.
 			$vendorID = $data[$VENDOR_ID];
-			$vendorDept = "NULL";
+			$vendorDept = 'NULL';
+			// If $size is not an integer, e.g. for BULK, vendorItems.units winds up NULL.
+			//  This may need to be addressed one day.
 			$vi_size = ($size == 0 || $size == "")?'NULL':$size;
 
 			if ( $dbMode == "add/replace" ) {
@@ -1312,7 +1360,7 @@ else {
 <select name="product_csv" size="<?php echo $selectSize; ?>">
 <?php echo "$opts"; ?>
 </select>
-<div style="margin-top: 0.5em;"><a href="uploadAnyFile.php" target="_upload">File upload utility</a></div>
+<div style="margin-top: 0.5em;"><a href="UploadAnyFile.php" target="_upload">File upload utility</a></div>
 <!-- div style="margin-top: 0.5em;">
 </div -->
 

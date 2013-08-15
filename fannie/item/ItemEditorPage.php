@@ -22,9 +22,7 @@
 *********************************************************************************/
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include('laneUpdates.php');
 
 // validate modules & include class definitions
@@ -85,7 +83,7 @@ class ItemEditorPage extends FanniePage {
 		}
 		$ret .= '<form action="ItemEditorPage.php" method=get>';
 		$ret .= '<input name=searchupc type=text id=upc> Enter 
-		<select name=\"ntype\">
+		<select name="ntype">
 		<option>UPC</option>
 		<option>SKU</option>
 		<option>Brand Prefix</option>

@@ -21,9 +21,7 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 
 
@@ -53,13 +51,6 @@ include($FANNIE_ROOT.'src/tmp_dir.php');
    interface. The whole tool is meant to be optional
    hand-holding for new users.
 */
-
-if(!validateUserQuiet('admin')){
-	$url = $FANNIE_URL.'auth/ui/loginform.php';
-	$rd = $FANNIE_URL.'cron/management/';
-	header("Location: $url?redirect=$rd");
-	exit;
-}
 
 class CronManagementPage extends FanniePage {
 

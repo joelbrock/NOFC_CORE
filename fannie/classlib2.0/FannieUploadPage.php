@@ -26,6 +26,7 @@ include_once(dirname(__FILE__).'/lib/FormLib.php');
 include_once(dirname(__FILE__).'/../src/tmp_dir.php');
 include_once(dirname(__FILE__).'/../src/csv_parser.php');
 include_once(dirname(__FILE__).'/../src/Excel/reader.php');
+include_once(dirname(__FILE__).'/../src/PHPExcel/Classes/PHPExcel.php');
 
 /**
   @class FanniePage
@@ -67,7 +68,7 @@ class FannieUploadPage extends FanniePage {
 
 	protected $upload_field_name = 'FannieUploadFile';
 	protected $upload_file_name = '';
-	protected $allowed_extensions = array('csv','xls');
+	protected $allowed_extensions = array('csv','xls','xlsx');
 
 	protected $error_details = 'n/a';
 
@@ -203,6 +204,33 @@ class FannieUploadPage extends FanniePage {
 		$path_parts = pathinfo($_FILES[$this->upload_field_name]['name']);
 		$extension = strtolower($path_parts['extension']);
 		$zip = False;
+		if ($_FILES[$this->upload_field_name]['error'] != UPLOAD_ERR_OK){
+			$msg = '';
+			switch($_FILES[$this->upload_field_name]['error']){
+			case UPLOAD_ERR_INI_SIZE:
+			case UPLOAD_ERR_FORM_SIZE:
+				$msg = 'File is too big. Try zipping it.';
+				break;
+			case UPLOAD_ERR_PARTIAL:
+				$msg = 'Upload did not complete.';
+				break;
+			case UPLOAD_ERR_NO_FILE:
+				$msg = 'No file was uploaded.';
+				break;
+			case UPLOAD_ERR_NO_TMP_DIR:
+				$msg = 'No place to put the file.';
+				break;
+			case UPLOAD_ERR_CANT_WRITE:
+				$msg = 'Permission problem saving file.';
+				break;
+			default:
+				$msg = 'Unknown problem uploading the file.';
+				break;
+			}
+			if (file_exists($tmpfile)) unlink($tmpfile);
+			$this->error_details = $msg;
+			return False;
+		}
 
 		/* validate file by extension */
 		if ($extension == 'zip'){
@@ -254,7 +282,7 @@ class FannieUploadPage extends FanniePage {
 		}
 
 		/* get a unique temp file name */
-		$this->upload_file_name = tempnam($tpath,$extension);
+		$this->upload_file_name = tempnam($tpath,substr($extension,-3));
 		if ($this->upload_file_name === False){
 			$this->upload_file_name = '';
 			unlink($tmpfile);
@@ -493,6 +521,10 @@ class FannieUploadPage extends FanniePage {
 		elseif (substr(basename($this->upload_file_name),0,3) == 'xls'){
 			return $this->xls_to_array($limit);
 		}
+		elseif (substr(basename($this->upload_file_name),0,3) == 'lsx'){
+			// php tempfile nameing only allows a three character prefix
+			return $this->xlsx_to_array($limit);
+		}
 		else	
 			return array();
 	}
@@ -537,6 +569,26 @@ class FannieUploadPage extends FanniePage {
 					$line[] = '';
 			}
 			$ret[] = $line;
+			if ($limit != 0 && count($ret) >= $limit) break;
+		}
+		return $ret;
+	}
+
+	protected function xlsx_to_array($limit){
+		if (!class_exists('PHPExcel_IOFactory'))
+			return array();
+
+		$objPHPExcel = PHPExcel_IOFactory::load($this->upload_file_name);
+		$sheet = $objPHPExcel->getActiveSheet();
+		$rows = $sheet->getHighestRow();
+		$cols = PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
+		$ret = array();
+		for ($i=1; $i<=$rows; $i++){
+			$new = array();
+			for($j=0; $j<=$cols; $j++){
+				$new[] = $sheet->getCellByColumnAndRow($j,$i)->getValue();
+			}
+			$ret[] = $new;
 			if ($limit != 0 && count($ret) >= $limit) break;
 		}
 		return $ret;

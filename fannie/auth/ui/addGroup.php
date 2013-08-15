@@ -23,8 +23,9 @@
 
 require('../login.php');
 $path = guesspath();
-$page_title = 'Fannie : Auth : Add Group';
-$header = 'Fannie : Auth : Add Group';
+include($path."config.php");
+$page_title = 'Fannie : Auth : Create Group';
+$header = 'Fannie : Auth : Create Group';
 
 include($path."src/header.html");
 
@@ -43,7 +44,7 @@ else {
   echo "<form method=get action=addGroup.php>";
   echo '<table>';
   echo "<tr><th>Group name</th><td><input type=text name=group /></td></tr>";
-echo "<tr><th>Username</th><td><select name=name>";
+echo "<tr><th>Username</th><td><select name=user>";
 foreach(getUserList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select></td></tr>";

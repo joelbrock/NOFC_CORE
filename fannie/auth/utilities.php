@@ -166,6 +166,28 @@ function doLogin($name){
 	$sessionQ = $sql->prepare_statement("update Users set session_id = ? where name=?");
 	$sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
 
+	/**
+	  Periodically purge expired records
+		9May13 EL Not periodic.
+	*/
+	$delP = $sql->prepare_statement('DELETE FROM userSessions
+			WHERE expires < '.$sql->now());
+	$delR = $sql->exec_statement($delP);
+
+	/**
+	  New behavior - Store session id in dedicated table.
+	  This allows more than one session record per user
+	  record - i.e., someone can be logged in on multiple
+	  computers simultaneously.
+	*/
+	$uid = getUID($name);
+	$ip = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+	$expires = date('Y-m-d',strtotime('tomorrow'));
+	$sessionP = $sql->prepare_statement('INSERT INTO userSessions 
+				(uid,session_id,ip,expires)
+				VALUES (?,?,?,?)');
+	$sessionR = $sql->exec_statement($sessionP,array($uid,$session_id,$ip,$expires));
+
 	$session_data = array("name"=>$name,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);
 
@@ -266,6 +288,16 @@ function table_check(){
 			auth varchar(50),
 			sub_start varchar(50),
 			sub_end varchar(50)
+			)");
+		$sql->exec_statement($p);
+	}
+	if (!$sql->table_exists('userSessions')){
+		$p = $sql->prepare_statement("CREATE TABLE userSessions (
+			uid varchar(4),
+			session_id varchar(50),
+			ip varchar(45),
+			expires datetime,
+			PRIMARY KEY (uid,session_id)
 			)");
 		$sql->exec_statement($p);
 	}

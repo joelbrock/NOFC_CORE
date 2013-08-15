@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 10Apr2013 Andy Theuninck Filter backslash out of comments
 	* 19Jan2013 Eric Lee Fix typo "Datbase" in reverseTaxExempt
 
 */
@@ -122,6 +123,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
+		$CORE_LOCAL->set("autoReprint",1);
 
 		if ($CORE_LOCAL->get("refundDiscountable")==0)
 			$intdiscountable = 0;
@@ -143,6 +145,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$strCardNo = $CORE_LOCAL->get("memberID");
 	$memType = $CORE_LOCAL->get("memType");
 	$staff = $CORE_LOCAL->get("isStaff");
+	$percentDiscount = $CORE_LOCAL->get("percentDiscount");
 
 	$db = Database::tDataConnect();
 
@@ -191,6 +194,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'voided'	=> MiscLib::nullwrap($intvoided),
 		'memType'	=> MiscLib::nullwrap($memType),
 		'staff'		=> MiscLib::nullwrap($staff),
+		'percentDiscount'=> MiscLib::nullwrap($percentDiscount),
 		'numflag'	=> MiscLib::nullwrap($numflag),
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
@@ -338,6 +342,7 @@ static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
 static public function addcomment($comment) {
 	if (strlen($comment) > 30)
 		$comment = substr($comment,0,30);
+	$comment = str_replace("\\",'',$comment);
 	self::addItem("",$comment, "C", "CM", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
@@ -565,21 +570,6 @@ static public function addTare($dbltare) {
 
 //___________________________end addTare()
 
-
-//------------------------------- insert MAD coupon statement (WFC specific) -------------------
-
-/**
-  Add WFC virtual coupon
-  @deprecated
-*/
-static public function addMadCoup() {
-	global $CORE_LOCAL;
-
-	$madCoup = -1 * $CORE_LOCAL->get("madCoup");
-	self::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
-
-}
-
 /**
   Add a virtual coupon by ID
   @param $id identifier in the VirtualCoupon table
@@ -607,9 +597,6 @@ static public function addVirtualCoupon($id){
 
 	self::addItem($upc, $desc, "I", "CP", "C", 0, 1, $val, $val, $val, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
-
-
-//___________________________end addMadCoupon()
 
 /**
   Add a deposit
@@ -642,8 +629,8 @@ static public function addTransDiscount() {
 /**
   Add cash drop record
 */
-static public function addCashDrop($ttl) {
-	self::addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, MiscLib::truncate2(-1 * $amt), MiscLib::truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
+static public function addCashDrop($amt) {
+	self::addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, MiscLib::truncate2(-1 * $amt), MiscLib::truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
 }
 
 // ---------------------------- insert stamp in activitytemplog --------------------------------
@@ -700,7 +687,6 @@ static public function addactivity($activity) {
 		$db->identifier_escape('Interval')	=> MiscLib::nullwrap($interval)
 		);
 	$result = $db->smart_insert("activitytemplog",$values);
-
 }
 
 /**

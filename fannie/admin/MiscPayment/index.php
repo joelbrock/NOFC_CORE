@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $header = "Miscellaneous Payment";
 $page_title = "Fannie :: Misc Payment";
@@ -138,19 +138,19 @@ function bill($amt,$desc,$dept,$tender){
 	else $t_no++;
 
 	$insQ = $dbc->prepare_statement("INSERT INTO dtransactions VALUES (
-		".$dbc->now().",?,?,?,
-		'?DP?',?,'D','','',?,
-		1.0,0,0.00,?,?,?0,0,.0,.0,
+		".$dbc->now().",0,0,?,?,?,
+		?,?,'D','','',?,
+		1.0,0,0.00,?,?,?,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		?,1)");
 	$amt = sprintf('%.2f',$amt);
-	$args = array($LANE_NO,$EMP_NO,$t_no,$amt,$dept,$desc,
+	$args = array($LANE_NO,$EMP_NO,$t_no,$amt.'DP'.$dept,$desc,
 		$dept,$amt,$amt,$amt,$CARD_NO);
 
 	$amt *= -1;
 	$amt = sprintf('%.2f',$amt);
 	$insQ2 = $dbc->prepare_statement("INSERT INTO dtransactions VALUES (
-		".$dbc->now().",?,?,?,
+		".$dbc->now().",0,0,?,?,?,
 		0,?,'T',?,0,0,
 		0.0,0,0.00,.0,?,.0,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',

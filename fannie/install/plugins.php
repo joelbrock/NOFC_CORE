@@ -13,28 +13,17 @@ body {
 	line-height: 1.5em;
 }
 </style>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
 <link rel="stylesheet" href="../src/css/toggle-switch.css" type="text/css" />
 <script type="text/javascript" src="../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="prod.php">Products</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Plugins
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<?php
+echo showInstallTabs("Plugins");
+?>
 
 <div id="wrapper">
-<h2>Fannie: Plugins</h2>
+<h1>Fannie: Plugins</h1>
 <?php
 if (is_writable('../config.php')){
 	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
@@ -44,8 +33,6 @@ else {
 }
 ?>
 <hr />
-
-<table id="install" border=0 cellspacing=0 cellpadding=4>
 
 <form action=plugins.php method=post>
 <b>Available plugins</b>:<br />
@@ -59,10 +46,13 @@ if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 //sort($mods);
 /** no autoloading functionality in Fannie yet
     hardcoded lists will go away eventually */
+// 17Jun13 PreorderPlugin doesn't exist.
 $mods = array('TimesheetPlugin','CalendarPlugin','ShelfAuditPlugin');
+//$mods = array('TimesheetPlugin','CalendarPlugin','ShelfAuditPlugin','PreorderPlugin');
 include('../modules/plugins2.0/timesheet/TimesheetPlugin.php');
 include('../modules/plugins2.0/calendar/CalendarPlugin.php');
 include('../modules/plugins2.0/ShelfAudit/ShelfAuditPlugin.php');
+//include('../modules/plugins2.0/preorder/PreorderPlugin.php');
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $FANNIE_PLUGIN_LIST;
@@ -83,6 +73,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$FANNIE_PLUGIN_LIST = $_REQUEST['PLUGINLIST'];
 }
 
+echo '<table id="install" border=0 cellspacing=0 cellpadding=4>';
 foreach($mods as $m){
 	$enabled = False;
 	$instance = new $m();
@@ -93,7 +84,7 @@ foreach($mods as $m){
 		}
 	}
 	echo '<tr><td colspan="2" style="height:1px;"><hr /></td></tr>';
-	echo '<tr><td style="width:10em;"></td>
+	echo '<tr><td style="width:10em;">&nbsp;</td>
 		<td style="width:25em;">'."\n";
 	echo '<fieldset class="toggle">'."\n";
 	printf('<input name="PLUGINLIST[]" id="plugin_%s" type="checkbox" %s

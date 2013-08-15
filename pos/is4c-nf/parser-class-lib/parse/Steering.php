@@ -60,14 +60,13 @@ class Steering extends Parser {
 			
 		case 'CAB':
 			if ($CORE_LOCAL->get("LastID") != "0")
-				$this->ret['output'] = boxMsg("transaction in progress");
+				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
 			else {
 				$this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
 			}
 			return True;
 		case "PV":
 			$CORE_LOCAL->set("pvsearch","$pvsearch");
-			//$CORE_LOCAL->set("pvsearch","");
 			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
 			return True;
@@ -164,7 +163,7 @@ class Steering extends Parser {
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
+				$this->ret['main_frame'] = $my_url."login.php";
 			}
 			return True;
 		case 'NS':

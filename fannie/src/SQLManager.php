@@ -30,7 +30,7 @@
  across two servers that are useful for lane-server
  communication
 */
-if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
+if (!function_exists("ADONewConnection")) include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
 
 class SQLManager {
 
@@ -137,11 +137,15 @@ class SQLManager {
 		$ok = (!is_object($con)) ? False : $con->Execute($query_text,$params);
 		if (!$ok && is_writable($ql)){
 			$fp = fopen($ql,'a');
+			if (is_array($query_text))
+				$query_text = $query_text[0];
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fputs($fp,$this->error()."\n\n");
 			fclose($fp);
 		}
 		else if (!$ok){
+			if (is_array($query_text))
+				$query_text = $query_text[0];
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}
@@ -707,6 +711,17 @@ class SQLManager {
 	}
 
 	/**
+	   Get list of tables/views
+	   @param which_connection see method close
+	*/
+	function get_tables($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$conn = $this->connections[$which_connection];
+		return $conn->MetaTables();
+	}
+
+	/**
 	  Get database's currency type
 	  @param which_connection see method close
 	  @return The SQL type
@@ -763,6 +778,17 @@ class SQLManager {
 			return ".dbo.";
 		}
 		return ".";
+	}
+
+	/**
+	  Get name of database driver 
+	  @param which_connection see method close
+	  @return String name
+	*/
+	function dbms_name($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		return $this->connections[$which_connection]->databaseType;
 	}
 
 	/**

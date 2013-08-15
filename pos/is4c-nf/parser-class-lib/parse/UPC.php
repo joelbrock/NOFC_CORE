@@ -159,6 +159,20 @@ class UPC extends Parser {
 		}
 
 		/**
+		  Apply special department handlers
+		  based on item's department
+		*/
+		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+		if (is_array($deptmods) && isset($deptmods[$row['department']])){
+			foreach($deptmods[$index] as $mod){
+				$obj = new $mod();
+				$ret = $obj->handle($row['department'],$row['normal_price'],$ret);
+				if ($ret['main_frame'])
+					return $ret;
+			}
+		}
+
+		/**
 		  Detect if a by-weight item has the same weight as the last by-weight
 		  item. This can indicate a stuck scale.
 		  The giant if determines whether the item is scalable, that we
@@ -267,9 +281,9 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
-			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
+			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
 			$CORE_LOCAL->set("wgtRequested",0);
-			$CORE_LOCAL->set("warned",1);
+			$CORE_LOCAL->set("warned",0);
 			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;
