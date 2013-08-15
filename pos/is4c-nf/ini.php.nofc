@@ -1,0 +1,193 @@
+<?php
+/*
+	COPY / RENAME TO ini.php
+	MOSTLY SANE DEFAULTS
+*/
+
+/*******************************************************************************
+
+    Copyright 2001, 2004 Wedge Community Co-op
+
+    This file is part of IT CORE.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+if (!isset($CORE_LOCAL))
+
+	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
+
+
+/************************************************************************************
+General Settings
+************************************************************************************/
+
+$CORE_LOCAL->set('OS','other', True);
+
+$CORE_LOCAL->set('browserOnly',0, True);
+
+$CORE_LOCAL->set('store','nofc', True);
+
+$CORE_LOCAL->set('laneno',9, True);
+
+
+/************************************************************************************
+Data Connection Settings
+************************************************************************************/
+$CORE_LOCAL->set('mServer','10.1.10.10', True);
+
+$CORE_LOCAL->set('mDatabase','COREserver', True);
+
+$CORE_LOCAL->set('mDBMS','mysql', True);
+
+				// Options: mssql, mysql, pgsql
+$CORE_LOCAL->set('mUser','is4clane', True);
+
+$CORE_LOCAL->set('mPass','is4clane', True);
+
+
+$CORE_LOCAL->set('DBMS','mysql', True);
+
+$CORE_LOCAL->set('tDatabase','core_translog', True);
+
+$CORE_LOCAL->set('pDatabase','core_opdata', True);
+
+$CORE_LOCAL->set('localhost','localhost', True);
+
+$CORE_LOCAL->set('localUser','is4clane', True);
+
+$CORE_LOCAL->set('localPass','is4clane', True);
+
+
+/***********************************************************************************
+Receipt & Printer Settings
+************************************************************************************/
+
+$CORE_LOCAL->set("print",1);
+$CORE_LOCAL->set("newReceipt",1);
+
+//$CORE_LOCAL->set('printerPort','/dev/lp0', True);
+
+$CORE_LOCAL->set('printerPort','/dev/lp0', True);
+
+//$CORE_LOCAL->set('printerPort','/dev/lp0', True);
+
+
+$CORE_LOCAL->set("receiptHeaderCount",3);
+$CORE_LOCAL->set("receiptFooterCount",5);
+$CORE_LOCAL->set("ckEndorseCount",4);
+$CORE_LOCAL->set("chargeSlipCount",0);
+
+/***********************************************************************************
+Screen Message Settings
+************************************************************************************/
+
+$CORE_LOCAL->set("welcomeMsgCount",0);
+$CORE_LOCAL->set("trainingMsgCount",0);
+$CORE_LOCAL->set("farewellMsgCount",0);
+
+$CORE_LOCAL->set('alertBar','POS - Alert', True);
+
+
+/***********************************************************************************
+Credit Card
+************************************************************************************/
+
+$CORE_LOCAL->set('CCintegrate',0, True);
+
+$CORE_LOCAL->set('gcIntegrate',0, True);
+
+$CORE_LOCAL->set("ccLive",1); 			// credit card integration live or testing. live = 1, testing = 0
+$CORE_LOCAL->set('RegisteredPaycardClasses',array('MercuryGift','GoEMerchant'), True);
+
+
+/***********************************************************************************
+Other Settings
+************************************************************************************/
+
+$CORE_LOCAL->set('discountEnforced',1, True);
+
+$CORE_LOCAL->set('lockScreen',1, True);
+
+$CORE_LOCAL->set("ddNotify",0); 
+$CORE_LOCAL->set("promoMsg",0);
+
+$CORE_LOCAL->set('memlistNonMember',0, True);
+
+$CORE_LOCAL->set('cashOverLimit',1, True);
+
+$CORE_LOCAL->set('dollarOver',50, True);
+
+$CORE_LOCAL->set('defaultNonMem','99999', True);
+
+
+if ($CORE_LOCAL->get("inputMasked") == "")
+	$CORE_LOCAL->set("inputMasked",0);
+
+$CORE_LOCAL->set("SCReceipt",1);			/***staff charge receipt - print default for each lane--apbw 1/31/05***/
+$CORE_LOCAL->set('CustomerDisplay',0, True);
+
+$CORE_LOCAL->set('touchscreen',False, True);
+
+
+//$CORE_LOCAL->set('SigCapture','', True);
+
+$CORE_LOCAL->set('SigCapture','', True);
+
+$CORE_LOCAL->set('visitingMem','', True);
+
+$CORE_LOCAL->set('scalePort','/dev/ttyS0', True);
+
+$CORE_LOCAL->set('scaleDriver','NewMagellan', True);
+
+$CORE_LOCAL->set('CCSigLimit',0, True);
+
+$CORE_LOCAL->set('SpecialUpcClasses',array('MemberCard','MemberBarcode','HouseCoupon','CouponCode'), True);
+
+$CORE_LOCAL->set('DiscountTypeCount',5, True);
+
+$CORE_LOCAL->set('DiscountTypeClasses',array('NormalPricing','EveryoneSale','MemberSale','StaffSale','StaffSale'), True);
+
+$CORE_LOCAL->set('PriceMethodCount',3, True);
+
+$CORE_LOCAL->set('PriceMethodClasses',array('BasicPM','GroupPM','QttyEnforcedGroupPM'), True);
+
+$CORE_LOCAL->set("enableFranking",0);
+$CORE_LOCAL->set('BottleReturnDept','', True);
+
+$CORE_LOCAL->set("ReceiptHeaderImage",'');
+$CORE_LOCAL->set('timeout','180000', True);
+
+$CORE_LOCAL->set('TRDesiredTenders',array('CK'=>'Check','MC'=>'Coupons','CC'=>'Credit Card','DC'=>'Debit Card','FS'=>'EBT','EC'=>'EBT Cash','tc'=>'Gift Certificate','MI'=>'Instore Charges','IC'=>'Instore Coupon','LN'=>'LOAN','PT'=>'Patronage','WT'=>'WIC'), True);
+
+$CORE_LOCAL->set("DrawerKickMedia", array());
+
+@include_once(dirname(__FILE__).'/ini-local.php');
+$CORE_LOCAL->set('memberUpcPrefix','000999');
+$CORE_LOCAL->set('PluginList',array('MemberCard','PriceCheck','QuickMenus'));
+$CORE_LOCAL->set('refundDiscountable',1, True);
+$CORE_LOCAL->set('LineItemDiscountMem','0.000000', True);
+$CORE_LOCAL->set('LineItemDiscountNonMem','0.000000', True);
+$CORE_LOCAL->set('emailReceiptFrom','');
+$CORE_LOCAL->set('kickerModule','Kicker', True);
+$CORE_LOCAL->set('FooterModules',array('SavedOrCouldHave','TransPercentDiscount','MemSales','EveryoneSales','MultiTotal'), True);
+$CORE_LOCAL->set('ModularTenders','1', True);
+$CORE_LOCAL->set('TenderMap',array('CK'=>'CheckTender','CC'=>'CreditCardTender','FS'=>'FoodstampTender','tc'=>'GiftCertificateTender','MI'=>'StoreChargeTender'), True);
+$CORE_LOCAL->set('member_subtotal',True, True);
+$CORE_LOCAL->set('dualDrawerMode',0, True);
+$CORE_LOCAL->set('TenderReportMod','DefaultTenderReport', True);
+$CORE_LOCAL->set('SpecialDeptMap',array(45=>array('EquityWarnDept'),49=>array('ArWarnDept')), True);
+$CORE_LOCAL->set('DiscountModule','DiscountModule', True);
+?>
