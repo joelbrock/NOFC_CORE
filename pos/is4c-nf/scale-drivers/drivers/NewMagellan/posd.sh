@@ -39,7 +39,7 @@ function checkrc() {
 # --CONSTANTS- - - - - - - - - - - - - - - - - - - -
 
 POSD=posdriver-sph-debian
-SPH=/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+SPH=/pos/CORE/pos/is4c-nf/scale-drivers/drivers/NewMagellan
 DHOME=/var/run/$POSD
 
 # --VARIABLES- - - - - - - - - - - - - - - - - - - -
