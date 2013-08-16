@@ -89,9 +89,10 @@ static public function get(){
 
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
-		$query = "select tdate,register_no,trans_no,tender
-		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and trans_subtype = '".$tender_code."' order by tdate";
+		$query = "select tdate,register_no,trans_no,tender 
+			from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
+			" and trans_subtype = '".$tender_code."' and (tender <> 0 OR tender <> -0) 
+			order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 		
@@ -101,7 +102,7 @@ static public function get(){
 		for ($i = 0; $i < $num_rows; $i++) {
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
-			if ($itemize == 1) {
+			if ($itemize == 1 && $row["tender"]) {
 				$receipt .= "  ".substr($timeStamp.$blank, 0, 13)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
