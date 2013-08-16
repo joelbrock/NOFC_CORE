@@ -142,7 +142,7 @@ static public function get(){
 			.substr($blank.number_format("0", 2), -10)
 			.substr($blank.number_format($row["total"], 2), -14)."\n";
 		}
-		$sum += $row["tender"];
+		$sum += $row["total"];
 	}
 	
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
