@@ -43,6 +43,9 @@ static public function get(){
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
+	$receipt .= ReceiptLib::centerString("T E N D E R   R E P O R T")."\n";
+	$receipt .= $ref;
+
 	// NET TOTAL
 	$netQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
 		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
@@ -84,7 +87,6 @@ static public function get(){
 		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
 		$receipt .= ReceiptLib::centerString($titleStr)."\n";
 
-		$receipt .= $ref;
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender
