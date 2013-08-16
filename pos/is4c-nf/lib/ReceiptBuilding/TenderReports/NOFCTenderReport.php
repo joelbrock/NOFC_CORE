@@ -43,6 +43,29 @@ static public function get(){
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
+	// NET TOTAL
+	$netQ = "SELECT -SUM(total) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
+		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
+	$netR = $db_a->query($netQ);
+	$net = $db_a->fetch_row($netR);
+    $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
+    $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
+    $receipt .= "\n";
+    // CASH + CHECK TOTAL
+    $tillQ = "SELECT SUM(total) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
+		" AND trans_subtype IN('CA','CK')";
+	$tillR = $db_a->query($tillQ);
+	$till = $db_a->fetch_row($tillR);
+	$receipt .= "  ".substr("CA & CK Total: ".$blank.$blank,0,20);
+	$receipt .= substr($blank.number_format(($till[0] * -1),2),-8)."\n";
+	// CARD TENDERS TOTAL
+    $cardQ = "SELECT SUM(total) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
+		" AND trans_subtype IN('DC','CC','FS','EC')";
+	$cardR = $db_a->query($cardQ);
+	$card = $db_a->fetch_row($cardR);
+	$receipt .= "  ".substr("DC / CC / EBT Total: ".$blank.$blank,0,20);
+	$receipt .= substr($blank.number_format(($card[0] * -1),2),-8)."\n";
+
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
