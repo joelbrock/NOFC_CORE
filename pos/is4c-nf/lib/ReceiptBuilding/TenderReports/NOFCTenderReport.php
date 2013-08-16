@@ -44,7 +44,7 @@ static public function get(){
 	$receipt = "";
 
 	// NET TOTAL
-	$netQ = "SELECT -SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
+	$netQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
 		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
 	$netR = $db_a->query($netQ);
 	$net = $db_a->fetch_row($netR);
@@ -57,14 +57,14 @@ static public function get(){
 	$tillR = $db_a->query($tillQ);
 	$till = $db_a->fetch_row($tillR);
 	$receipt .= "  ".substr("CA & CK Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($till[0] * -1),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($till[0]),2),-8)."\n";
 	// CARD TENDERS TOTAL
     $cardQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
 		" AND trans_subtype IN('DC','CC','FS','EC')";
 	$cardR = $db_a->query($cardQ);
 	$card = $db_a->fetch_row($cardR);
 	$receipt .= "  ".substr("DC / CC / EBT Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($card[0] * -1),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($card[0]),2),-8)."\n";
 
 	$receipt .= str_repeat("\n", 5);
 
@@ -138,7 +138,7 @@ static public function get(){
 			.substr($row["register_no"].$blank, 0, 9)
 			.substr($row["trans_no"].$blank, 0, 8)
 			.substr($blank.number_format("0", 2), -10)
-			.substr($blank.number_format($row["tender"], 2), -14)."\n";
+			.substr($blank.number_format($row["total"], 2), -14)."\n";
 		}
 		$sum += $row["tender"];
 	}
@@ -146,7 +146,8 @@ static public function get(){
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
 	$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
-	$receipt .= str_repeat("\n", 3);
+	
+	$receipt .= str_repeat("\n", 5);
 
 	return $receipt.chr(27).chr(105);
 }
