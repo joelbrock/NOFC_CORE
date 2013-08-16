@@ -21,43 +21,34 @@
 
 *********************************************************************************/
 
-class PriceCheckParser extends Parser {
-	function check($str){
-		if ($str == "FF")
-			return True;
-		else if (substr($str,0,2)=="FF" && is_numeric(substr($str,2)))
-			return False;
-		return False;
-	}
-
-	function parse($str){
-		$ret = $this->default_json();
-		
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
-
-		if ($CORE_LOCAL->get("memberID") == 0){
-			$ret['output'] = DisplayLib::boxMsg(_("No member selected")."<br />".
-						_("Apply member number first"));
-		} else {
-			$plugin_info = new NeedBasedDiscount();
-			$ret['main_frame'] = $plugin_info->plugin_url().'/NeedBasedDiscountPage.php';
-		}
-		return $ret;
-	}
-
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>FF</td>
-				<td>Apply Need-Based Discount</td>
-			</tr>
-			</table>";
-	}
-
+class NeedDiscountParser extends Parser {
+  function check($str){
+    if ($str == "FF") return True;
+    else return False;
+  }
+  function parse($str){
+    global $CORE_LOCAL;
+    $CORE_LOCAL->set('NeedDiscountFlag',1);
+    // add comment/informational line to transaction?
+    return $this->default_json();
+  }
+}
+class NeedDiscountModule extends DiscountModule {
+  function calculate(){
+    global $CORE_LOCAL;
+    $discount = parent::calculate();
+    if ($CORE_LOCAL->get('NeedDiscountFlag')===1){
+      $extra = $CORE_LOCAL->get('needBasedPercent') * $CORE_LOCAL->get('discountableTotal');
+      $discount = MiscLib::truncate2($discount + $extra);
+    }
+    return $discount;
+  }
+}
+class NeedDiscountPlugin extends Plugin {
+  function plugin_transaction_reset(){
+    global $CORE_LOCAL;
+    $CORE_LOCAL->set('NeedDiscountFlag', 0);
+  }
 }
 
 ?>
