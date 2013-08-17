@@ -31,7 +31,8 @@ class MADDiscountParser extends Parser {
 
         Database::getsubtotals();
         $MADDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('MADDiscountPercent'), 2);
-        $MADupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('MADDiscountName'))),0,13);
+        // $MADupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('MADDiscountName'))),0,13);
+        $MADupc = "MADDISCOUNT";
         $MADname = $CORE_LOCAL->get('MADDiscountName');
         TransRecord::addItem("$MADupc", "$MADname", "I", "IC", "C", 0, 1, 
             -1*$MADDisc, -1*$MADDisc, -1*$MADDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);

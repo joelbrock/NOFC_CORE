@@ -31,7 +31,8 @@ class NeedDiscountParser extends Parser {
 
         Database::getsubtotals();
         $NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
-        $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
+        // $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
+        $NBDupc = "NEEDBASEDDISC";
         $NBDname = $CORE_LOCAL->get('needBasedName');
         TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
             -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
