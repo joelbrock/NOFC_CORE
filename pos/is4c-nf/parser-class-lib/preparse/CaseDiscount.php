@@ -48,7 +48,7 @@ class CaseDiscount extends PreParser {
 				$remainder = $split[1];
 			}
 			elseif ($CORE_LOCAL->get("isMember") != 1){
-				$CORE_LOCAL->set("casediscount",5);
+				$CORE_LOCAL->set("casediscount",8);
 				$remainder = $split[1];
 			}
 		}	
