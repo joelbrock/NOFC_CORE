@@ -36,8 +36,8 @@ class NeedDiscountParser extends Parser {
         $NBDname = $CORE_LOCAL->get('needBasedName');
         TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
             -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
-        $discamt = $CORE_LOCAL->get('percentdiscount') + $CORE_LOCAL->get('needBasedPercent');
-        $CORE_LOCAL->set('percentdiscount', $discamt);
+        $discamt = $CORE_LOCAL->get('percentDiscount') + $CORE_LOCAL->get('needBasedPercent');
+        $CORE_LOCAL->set('percentDiscount', $discamt);
         $ret = $this->default_json();
         $ret['output'] = DisplayLib::lastpage();
         $ret['redraw_footer'] = True;
