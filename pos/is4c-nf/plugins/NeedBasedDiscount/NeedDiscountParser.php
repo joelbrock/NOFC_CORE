@@ -34,7 +34,7 @@ class NeedDiscountParser extends Parser {
             upc = 'NEEDBASEDDISCOUNT'";
         $limitR = $transDB->query($limitQ);
         $used = $transDB->num_rows($limitR);
-        if ($used !== 0)){
+        if ($used !== 0){
             $ret['output'] =  DisplayLib::boxMsg(_("discount already applied"));
             return $ret;
         } else {
