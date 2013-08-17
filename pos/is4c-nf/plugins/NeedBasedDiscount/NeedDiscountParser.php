@@ -27,15 +27,16 @@ class NeedDiscountParser extends Parser {
 	}
 	function parse($str){
 		global $CORE_LOCAL;
+        $ret = $this->default_json();
         // restrict to once per transaction
         $transDB = Database::tDataConnect();
         $limitQ = "select upc from localtemptrans where
             upc = 'NEEDBASEDDISCOUNT'";
         $limitR = $transDB->query($limitQ);
         $used = $transDB->num_rows($limitR);
-        if ($used > 0){
-            $json['output'] =  DisplayLib::boxMsg(_("discount already applied"));
-            return $json;
+        if ($used !== 0)){
+            $ret['output'] =  DisplayLib::boxMsg(_("discount already applied"));
+            return $ret;
         } else {
     		$CORE_LOCAL->set('NeedDiscountFlag',1);
 
@@ -48,7 +49,6 @@ class NeedDiscountParser extends Parser {
                 -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
             $discamt = $CORE_LOCAL->get('percentDiscount') + $CORE_LOCAL->get('needBasedPercent');
             $CORE_LOCAL->set('percentDiscount', $discamt);
-            $ret = $this->default_json();
             $ret['output'] = DisplayLib::lastpage();
             $ret['redraw_footer'] = True;
 
