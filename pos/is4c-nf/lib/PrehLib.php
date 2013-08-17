@@ -767,6 +767,8 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$price = $price/100;
 	$dept = $dept/10;
 
+	if ($dept == $CORE_LOCAL->get('BottleReturnDept')) $price = $price * -1;
+
 	if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
 		$case_discount = (100 - $CORE_LOCAL->get("casediscount"))/100;
 		$price = $case_discount * $price;
