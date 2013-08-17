@@ -21,26 +21,16 @@
 
 *********************************************************************************/
 
-class ArWarnDept extends SpecialDept {
-
-	function handle($deptID,$amount,$json){
+class NeedDiscountModule extends DiscountModule {
+	function calculate(){
 		global $CORE_LOCAL;
-
-		if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnAR"){
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
+		$discount = parent::calculate();
+		if ($CORE_LOCAL->get('NeedDiscountFlag')===1){
+			$extra = 0.05 * $CORE_LOCAL->get('discountableTotal');
+			$discount = MiscLib::truncate2($discount + $extra);
 		}
-		else {
-			$CORE_LOCAL->set("warned",1);
-			$CORE_LOCAL->set("warnBoxType","warnAR");
-			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain your<br>
-				reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-		}
-
-		return $json;
+		return $discount;
 	}
-
 }
 
 ?>

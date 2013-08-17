@@ -20,27 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-class ArWarnDept extends SpecialDept {
-
-	function handle($deptID,$amount,$json){
-		global $CORE_LOCAL;
-
-		if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnAR"){
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
-		}
-		else {
-			$CORE_LOCAL->set("warned",1);
-			$CORE_LOCAL->set("warnBoxType","warnAR");
-			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain your<br>
-				reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-		}
-
-		return $json;
+class NeedDiscountParser extends Parser {
+	function check($str){
+		if ($str == "FF") return True;
+		else return False;
 	}
-
+	function parse($str){
+		global $CORE_LOCAL;
+		$CORE_LOCAL->set('NeedDiscountFlag',1);
+		// add comment/informational line to transaction?
+		return $this->default_json();
+	}
 }
-
 ?>

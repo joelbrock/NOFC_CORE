@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -23,8 +23,8 @@
 
 class NeedBasedDiscount extends Plugin {
 
-	public $plugin_settings = array(
-	   'needBasedPercent' => array(
+    public $plugin_settings = array(
+       'needBasedPercent' => array(
         'default' => '',
         'label' => 'Percentage Discount',
         'description' => 'Enter the percentage discount of your need-based discount program
@@ -36,15 +36,13 @@ class NeedBasedDiscount extends Plugin {
         'description' => 'Enter the name of your own need-based discount program')
     );
 
-	public $plugin_description = 'Apply a flat percantage discount to all Members enrolled
+    public $plugin_description = 'Apply a flat percantage discount to all Members enrolled
                         in your Need-Based discount program.  Sometimes called Food For All or FLOWER';
 
-	public function plugin_enable(){
-
+	function plugin_transaction_reset(){
+		global $CORE_LOCAL;
+		$CORE_LOCAL->set('NeedDiscountFlag', 0);
 	}
-
-	public function plugin_disable(){
-
-	}
-
 }
+
+?>
