@@ -36,8 +36,9 @@ class NeedBasedDiscount extends Plugin {
         'description' => 'Enter the name of your own need-based discount program')
     );
 
-    public $plugin_description = 'Apply a flat percantage discount to all Members enrolled
-                        in your Need-Based discount program.  Sometimes called Food For All or FLOWER';
+    public $plugin_description = 'Apply a flat percantage discount to all Members enrolled<br>
+                        in your Need-Based discount program.  Sometimes called Food For All or FLOWER.<br>
+                        Trigger with "FF"';
 
 	function plugin_transaction_reset(){
 		global $CORE_LOCAL;
