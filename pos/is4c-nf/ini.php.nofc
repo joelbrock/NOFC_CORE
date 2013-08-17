@@ -34,72 +34,58 @@ if (!isset($CORE_LOCAL))
 General Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set('OS','other', True);
-
+$CORE_LOCAL->set("OS",'other', True);
 $CORE_LOCAL->set('browserOnly',0, True);
 
-$CORE_LOCAL->set('store','nofc', True);
-
-$CORE_LOCAL->set('laneno',9, True);
-
+$CORE_LOCAL->set("store",'nofc', True);
+$CORE_LOCAL->set("laneno",4, True);
 
 /************************************************************************************
 Data Connection Settings
 ************************************************************************************/
-$CORE_LOCAL->set('mServer','10.1.10.10', True);
+$CORE_LOCAL->set("mServer",'10.1.10.10', True);
+$CORE_LOCAL->set('mDatabase','core_log', True);
 
-$CORE_LOCAL->set('mDatabase','COREserver', True);
-
-$CORE_LOCAL->set('mDBMS','mysql', True);
-
+$CORE_LOCAL->set("mDBMS",'mysql', True);
 				// Options: mssql, mysql, pgsql
-$CORE_LOCAL->set('mUser','is4clane', True);
+$CORE_LOCAL->set("mUser",'is4clane', True);
+$CORE_LOCAL->set("mPass",'is4clane', True);
 
-$CORE_LOCAL->set('mPass','is4clane', True);
-
-
-$CORE_LOCAL->set('DBMS','mysql', True);
-
-$CORE_LOCAL->set('tDatabase','core_translog', True);
-
-$CORE_LOCAL->set('pDatabase','core_opdata', True);
-
-$CORE_LOCAL->set('localhost','localhost', True);
-
-$CORE_LOCAL->set('localUser','is4clane', True);
-
-$CORE_LOCAL->set('localPass','is4clane', True);
-
+$CORE_LOCAL->set("DBMS",'mysql', True);
+$CORE_LOCAL->set("tDatabase",'core_translog', True);
+$CORE_LOCAL->set("pDatabase",'core_opdata', True);
+$CORE_LOCAL->set("localhost",'127.0.0.1', True);
+$CORE_LOCAL->set("localUser",'is4clane', True);
+$CORE_LOCAL->set("localPass",'is4clane', True);
 
 /***********************************************************************************
 Receipt & Printer Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set("print",1);
-$CORE_LOCAL->set("newReceipt",1);
+$CORE_LOCAL->set("print",1, True);
+$CORE_LOCAL->set("newReceipt",1, True);
+
+//$CORE_LOCAL->set('printerPort','/dev/lp0', True);
 
 //$CORE_LOCAL->set('printerPort','/dev/lp0', True);
 
 $CORE_LOCAL->set('printerPort','/dev/lp0', True);
 
-//$CORE_LOCAL->set('printerPort','/dev/lp0', True);
 
-
-$CORE_LOCAL->set("receiptHeaderCount",3);
-$CORE_LOCAL->set("receiptFooterCount",5);
-$CORE_LOCAL->set("ckEndorseCount",4);
-$CORE_LOCAL->set("chargeSlipCount",0);
+$CORE_LOCAL->set("receiptHeaderCount",4, True);
+$CORE_LOCAL->set("receiptFooterCount",9, True);
+$CORE_LOCAL->set("ckEndorseCount",5, True);
+$CORE_LOCAL->set("chargeSlipCount",0, True);
 
 /***********************************************************************************
 Screen Message Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set("welcomeMsgCount",0);
-$CORE_LOCAL->set("trainingMsgCount",0);
-$CORE_LOCAL->set("farewellMsgCount",0);
+$CORE_LOCAL->set("welcomeMsgCount",3, True);
+$CORE_LOCAL->set("trainingMsgCount",3, True);
+$CORE_LOCAL->set("farewellMsgCount",3, True);
 
-$CORE_LOCAL->set('alertBar','POS - Alert', True);
-
+$CORE_LOCAL->set("alertBar",'POS - Alert', True);
 
 /***********************************************************************************
 Credit Card
@@ -109,85 +95,71 @@ $CORE_LOCAL->set('CCintegrate',0, True);
 
 $CORE_LOCAL->set('gcIntegrate',0, True);
 
-$CORE_LOCAL->set("ccLive",1); 			// credit card integration live or testing. live = 1, testing = 0
-$CORE_LOCAL->set('RegisteredPaycardClasses',array('MercuryGift','GoEMerchant'), True);
-
+$CORE_LOCAL->set("ccLive",0, True);
+$CORE_LOCAL->set("RegisteredPaycardClasses",array('MercuryGift','GoEMerchant'), True);
 
 /***********************************************************************************
 Other Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set('discountEnforced',1, True);
+$CORE_LOCAL->set("discountEnforced",1, True);
+$CORE_LOCAL->set("lockScreen",1, True);
 
-$CORE_LOCAL->set('lockScreen',1, True);
+$CORE_LOCAL->set("memlistNonMember",0, True);
+$CORE_LOCAL->set('cashOverLimit',0, True);
 
-$CORE_LOCAL->set("ddNotify",0); 
-$CORE_LOCAL->set("promoMsg",0);
-
-$CORE_LOCAL->set('memlistNonMember',0, True);
-
-$CORE_LOCAL->set('cashOverLimit',1, True);
-
-$CORE_LOCAL->set('dollarOver',50, True);
-
+$CORE_LOCAL->set("dollarOver",0, True);
 $CORE_LOCAL->set('defaultNonMem','99999', True);
 
 
-if ($CORE_LOCAL->get("inputMasked") == "")
-	$CORE_LOCAL->set("inputMasked",0);
-
-$CORE_LOCAL->set("SCReceipt",1);			/***staff charge receipt - print default for each lane--apbw 1/31/05***/
-$CORE_LOCAL->set('CustomerDisplay',0, True);
-
-$CORE_LOCAL->set('touchscreen',False, True);
-
+$CORE_LOCAL->set("CustomerDisplay",0, True);
+$CORE_LOCAL->set("touchscreen",False, True);
 
 //$CORE_LOCAL->set('SigCapture','', True);
 
 $CORE_LOCAL->set('SigCapture','', True);
 
-$CORE_LOCAL->set('visitingMem','', True);
+$CORE_LOCAL->set('visitingMem','9998', True);
 
 $CORE_LOCAL->set('scalePort','/dev/ttyS0', True);
 
 $CORE_LOCAL->set('scaleDriver','NewMagellan', True);
 
-$CORE_LOCAL->set('CCSigLimit',0, True);
+$CORE_LOCAL->set("CCSigLimit",0, True);
+$CORE_LOCAL->set('SpecialUpcClasses',array('MemberBarcode','HouseCoupon','CouponCode'), True);
 
-$CORE_LOCAL->set('SpecialUpcClasses',array('MemberCard','MemberBarcode','HouseCoupon','CouponCode'), True);
-
-$CORE_LOCAL->set('DiscountTypeCount',5, True);
-
+$CORE_LOCAL->set("DiscountTypeCount",5, True);
 $CORE_LOCAL->set('DiscountTypeClasses',array('NormalPricing','EveryoneSale','MemberSale','StaffSale','StaffSale'), True);
 
-$CORE_LOCAL->set('PriceMethodCount',3, True);
+$CORE_LOCAL->set("PriceMethodCount",3, True);
+$CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'), True);
+$CORE_LOCAL->set('enableFranking',1, True);
 
-$CORE_LOCAL->set('PriceMethodClasses',array('BasicPM','GroupPM','QttyEnforcedGroupPM'), True);
+$CORE_LOCAL->set('BottleReturnDept','41', True);
 
-$CORE_LOCAL->set("enableFranking",0);
-$CORE_LOCAL->set('BottleReturnDept','', True);
-
-$CORE_LOCAL->set("ReceiptHeaderImage",'');
+$CORE_LOCAL->set("ReceiptHeaderImage",'', True);
 $CORE_LOCAL->set('timeout','180000', True);
 
 $CORE_LOCAL->set('TRDesiredTenders',array('CK'=>'Check','MC'=>'Coupons','CC'=>'Credit Card','DC'=>'Debit Card','FS'=>'EBT','EC'=>'EBT Cash','tc'=>'Gift Certificate','MI'=>'Instore Charges','IC'=>'Instore Coupon','LN'=>'LOAN','PT'=>'Patronage','WT'=>'WIC'), True);
 
-$CORE_LOCAL->set("DrawerKickMedia", array());
+$CORE_LOCAL->set("DrawerKickMedia", array(), True);
 
 @include_once(dirname(__FILE__).'/ini-local.php');
-$CORE_LOCAL->set('memberUpcPrefix','000999');
-$CORE_LOCAL->set('PluginList',array('MemberCard','PriceCheck','QuickMenus'));
+$CORE_LOCAL->set('DiscountModule','NeedDiscountModule', True);
 $CORE_LOCAL->set('refundDiscountable',1, True);
 $CORE_LOCAL->set('LineItemDiscountMem','0.000000', True);
 $CORE_LOCAL->set('LineItemDiscountNonMem','0.000000', True);
-$CORE_LOCAL->set('emailReceiptFrom','');
 $CORE_LOCAL->set('kickerModule','Kicker', True);
+$CORE_LOCAL->set('dualDrawerMode',0, True);
 $CORE_LOCAL->set('FooterModules',array('SavedOrCouldHave','TransPercentDiscount','MemSales','EveryoneSales','MultiTotal'), True);
 $CORE_LOCAL->set('ModularTenders','1', True);
-$CORE_LOCAL->set('TenderMap',array('CK'=>'CheckTender','CC'=>'CreditCardTender','FS'=>'FoodstampTender','tc'=>'GiftCertificateTender','MI'=>'StoreChargeTender'), True);
+$CORE_LOCAL->set('TenderReportMod','NOFCTenderReport', True);
+$CORE_LOCAL->set('TenderMap',array('CK'=>'NoCBCheckTender','CC'=>'CreditCardTender','DC'=>'NoCBDebitTender','FS'=>'FoodstampTender','tc'=>'GiftCardTender','MI'=>'StoreChargeTender'), True);
 $CORE_LOCAL->set('member_subtotal',True, True);
-$CORE_LOCAL->set('dualDrawerMode',0, True);
-$CORE_LOCAL->set('TenderReportMod','DefaultTenderReport', True);
 $CORE_LOCAL->set('SpecialDeptMap',array(45=>array('EquityWarnDept'),49=>array('ArWarnDept')), True);
-$CORE_LOCAL->set('DiscountModule','DiscountModule', True);
+$CORE_LOCAL->set('PluginList',array('CashDrop','MemberCard','NeedBasedDiscount','PriceCheck','QuickMenus','VirtualCoupon'), True);
+$CORE_LOCAL->set('memberUpcPrefix','00000999', True);
+$CORE_LOCAL->set('cashDropThreshold','500', True);
+$CORE_LOCAL->set('needBasedPercent','0.05', True);
+$CORE_LOCAL->set('needBasedName','Food For All', True);
 ?>
