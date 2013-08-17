@@ -33,7 +33,7 @@ class ArWarnDept extends SpecialDept {
 		else {
 			$CORE_LOCAL->set("warned",1);
 			$CORE_LOCAL->set("warnBoxType","warnAR");
-			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>
+			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain your<br>
 				reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
 			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
