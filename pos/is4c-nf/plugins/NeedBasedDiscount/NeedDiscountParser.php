@@ -27,22 +27,33 @@ class NeedDiscountParser extends Parser {
 	}
 	function parse($str){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set('NeedDiscountFlag',1);
+        // restrict to once per transaction
+        $transDB = Database::tDataConnect();
+        $limitQ = "select upc from localtemptrans where
+            upc = 'NEEDBASEDDISCOUNT'";
+        $limitR = $transDB->query($limitQ);
+        $used = $transDB->num_rows($limitR);
+        if ($used > 0){
+            $json['output'] =  DisplayLib::boxMsg(_("discount already applied"));
+            return $json;
+        } else {
+    		$CORE_LOCAL->set('NeedDiscountFlag',1);
 
-        Database::getsubtotals();
-        $NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
-        // $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
-        $NBDupc = "NEEDBASEDDISC";
-        $NBDname = $CORE_LOCAL->get('needBasedName');
-        TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
-            -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
-        $discamt = $CORE_LOCAL->get('percentDiscount') + $CORE_LOCAL->get('needBasedPercent');
-        $CORE_LOCAL->set('percentDiscount', $discamt);
-        $ret = $this->default_json();
-        $ret['output'] = DisplayLib::lastpage();
-        $ret['redraw_footer'] = True;
+            Database::getsubtotals();
+            $NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
+            // $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
+            $NBDupc = "NEEDBASEDDISC";
+            $NBDname = $CORE_LOCAL->get('needBasedName');
+            TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
+                -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
+            $discamt = $CORE_LOCAL->get('percentDiscount') + $CORE_LOCAL->get('needBasedPercent');
+            $CORE_LOCAL->set('percentDiscount', $discamt);
+            $ret = $this->default_json();
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = True;
 
-        return $ret;
+            return $ret;
+        }
 	}
 }
 ?>
