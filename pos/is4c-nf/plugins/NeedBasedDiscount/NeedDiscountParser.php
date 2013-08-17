@@ -30,17 +30,15 @@ class NeedDiscountParser extends Parser {
 		$CORE_LOCAL->set('NeedDiscountFlag',1);
 
         Database::getsubtotals();
-        $amt = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
-        $NBDisc = number_format($amt * $CORE_LOCAL->get('needBasedPercent'), 2);
+        $NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
         $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
         $NBDname = $CORE_LOCAL->get('needBasedName');
-        TransRecord::addItem("$NBDupc", "$NBDname", "I", "CP", "C", 0, 1, 
+        TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
             -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
         $ret = $this->default_json();
         $ret['output'] = DisplayLib::lastpage();
         $ret['redraw_footer'] = True;
 
-		// return $this->default_json();
         return $ret;
 	}
 }
