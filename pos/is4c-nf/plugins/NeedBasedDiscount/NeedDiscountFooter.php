@@ -30,9 +30,10 @@ class NeedDiscountFooter extends TransPercentDiscount {
 			$percent += ($CORE_LOCAL->get('needDiscountPercent') * 100);
 		if ($percent == 0)
 			return _("% Discount");
-		else
-            $CORE_LOCAL->set('transDiscount', $percent);
+		else {
+            $CORE_LOCAL->set('percentDiscount', $percent);
 			return $percent._("% Discount");
+        }
 	}
     function display_content() {
         global $CORE_LOCAL;
