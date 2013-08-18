@@ -26,15 +26,17 @@ class MADDiscountParser extends Parser {
 		else return False;
 	}
 	function parse($str){
-	   global $CORE_LOCAL;
-	   $ret = $this->default_json();
+        global $CORE_LOCAL;
+        $ret = $this->default_json();
         
-        if ($CORE_LOCAL->get('MADDiscountFlag')==1) {
+        if ($CORE_LOCAL->get('isMember') !== 1) {
+            $ret['output'] =  DisplayLib::boxMsg(_("must be a member to use this discount"));
+            return $ret;
+        } elseif ($CORE_LOCAL->get('MADDiscountFlag')==1) {
             $ret['output'] = DisplayLib::boxMsg(_("discount already applied"));
             return $ret;
         } else {
             $CORE_LOCAL->set('MADDiscountFlag',1);
-
             Database::getsubtotals();
             $MADDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('MADDiscountPercent'), 2);
             $MADupc = "MADDISCOUNT";
@@ -44,7 +46,6 @@ class MADDiscountParser extends Parser {
             $ret = $this->default_json();
             $ret['output'] = DisplayLib::lastpage();
             $ret['redraw_footer'] = True;
-
             return $ret;
         }
 	}
