@@ -1,9 +1,10 @@
 <?php
 
 $my_menu = array(
-	"Charge Available Card" => "CCFROMCACHE",
-	"Reboot Terminal" => "TERMREBOOT",
-	"Tender External CC" => "MANUALCC"
+	"Salab Bar - $6.99/lb" => "9010",
+	"8 oz Soup - $2.99" => "9003",
+	"16 oz Soup - $4.99" => "9004",
+	"Soup Cup Single - $0.30" => "9091"
 );
 
 ?>
