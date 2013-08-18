@@ -26,21 +26,27 @@ class MADDiscountParser extends Parser {
 		else return False;
 	}
 	function parse($str){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('MADDiscountFlag',1);
+	   global $CORE_LOCAL;
+	   $ret = $this->default_json();
+        
+        if ($CORE_LOCAL->get('MADDiscountFlag')==1) {
+            $ret['output'] = DisplayLib::boxMsg(_("discount already applied"));
+            return $ret;
+        } else {
+            $CORE_LOCAL->set('MADDiscountFlag',1);
 
-        Database::getsubtotals();
-        $MADDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('MADDiscountPercent'), 2);
-        // $MADupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('MADDiscountName'))),0,13);
-        $MADupc = "MADDISCOUNT";
-        $MADname = $CORE_LOCAL->get('MADDiscountName');
-        TransRecord::addItem("$MADupc", "$MADname", "I", "IC", "C", 0, 1, 
-            -1*$MADDisc, -1*$MADDisc, -1*$MADDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
-        $ret = $this->default_json();
-        $ret['output'] = DisplayLib::lastpage();
-        $ret['redraw_footer'] = True;
+            Database::getsubtotals();
+            $MADDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('MADDiscountPercent'), 2);
+            $MADupc = "MADDISCOUNT";
+            $MADname = $CORE_LOCAL->get('MADDiscountName');
+            TransRecord::addItem("$MADupc", "$MADname", "I", "IC", "C", 0, 1, 
+                -1*$MADDisc, -1*$MADDisc, -1*$MADDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 30);
+            $ret = $this->default_json();
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = True;
 
-        return $ret;
+            return $ret;
+        }
 	}
 }
 ?>

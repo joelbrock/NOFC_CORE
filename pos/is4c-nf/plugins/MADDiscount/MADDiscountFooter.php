@@ -21,13 +21,13 @@
 
 *********************************************************************************/
 
-class NeedBasedDiscountFooter extends TransPercentDiscount {
+class MADDiscountFooter extends TransPercentDiscount {
 
 	function function_header_content(){
 		global $CORE_LOCAL;
 		$percent = $CORE_LOCAL->get('percentDiscount');
-		if ($CORE_LOCAL->get('NeedDiscountFlag')===1)
-			$percent += $CORE_LOCAL->get('needDiscountPercent');
+		if ($CORE_LOCAL->get('MADDiscountFlag')===1)
+			$percent += $CORE_LOCAL->get('MADDiscountPercent');
 		if ($percent == 0)
 			return _("% Discount");
 		else
