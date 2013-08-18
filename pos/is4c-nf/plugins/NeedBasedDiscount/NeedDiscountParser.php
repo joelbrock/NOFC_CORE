@@ -28,21 +28,26 @@ class NeedDiscountParser extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
         $ret = $this->default_json();
-    
+
+	if ($CORE_LOCAL->get('NeedDiscountFlag')==1) {
+    		$ret['output'] =  DisplayLib::boxMsg(_("discount already applied"));
+		return $ret;
+	} else {
 		$CORE_LOCAL->set('NeedDiscountFlag',1);
 
-        Database::getsubtotals();
-        $NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
-        // $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
-        $NBDupc = "NEEDBASEDDISC";
-        $NBDname = $CORE_LOCAL->get('needBasedName');
-        TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
-            -1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
-        $ret['output'] = DisplayLib::lastpage();
-        $ret['redraw_footer'] = True;
+        	Database::getsubtotals();
+        	$NBDisc = number_format($CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('needBasedPercent'), 2);
+        	// $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
+        	$NBDupc = "NEEDBASEDDISC";
+        	$NBDname = $CORE_LOCAL->get('needBasedName');
+        	TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
+            		-1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
+        	$ret['output'] = DisplayLib::lastpage();
+        	$ret['redraw_footer'] = True;
 
-        return $ret;
+        	return $ret;
         
 	}
+}
 }
 ?>
