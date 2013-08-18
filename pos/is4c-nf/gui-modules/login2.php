@@ -100,7 +100,7 @@ class login2 extends BasicPage {
 		// 18Agu12 EL Add separately for readability of source.
 		$this->add_onload_command("\$('#reginput').focus();");
 		$this->add_onload_command("\$('#scalebox').css('display','none');");
-		$this->add_onload_command("\$('body').css('background-image','none');");
+		$this->add_onload_command("\$('body').css('background-image','../graphics/is4c_login.gif');");
 
 		?>
 		<div id="loginTopBar">
