@@ -27,7 +27,7 @@ class NeedBasedDiscountFooter extends TransPercentDiscount {
 		global $CORE_LOCAL;
 		$percent = $CORE_LOCAL->get('percentDiscount');
 		if ($CORE_LOCAL->get('NeedDiscountFlag')===1)
-			$percent += $CORE_LOCAL->get('needDiscountPercent');
+			$percent += ($CORE_LOCAL->get('needDiscountPercent') * 100);
 		if ($percent == 0)
 			return _("% Discount");
 		else
