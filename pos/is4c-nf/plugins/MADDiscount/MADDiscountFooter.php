@@ -23,7 +23,7 @@
 
 class MADDiscountFooter extends TransPercentDiscount {
 
-	function function_header_content(){
+	function header_content(){
 		global $CORE_LOCAL;
 		$percent = $CORE_LOCAL->get('percentDiscount');
 		if ($CORE_LOCAL->get('MADDiscountFlag')===1)
