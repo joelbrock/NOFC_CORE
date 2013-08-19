@@ -47,25 +47,33 @@ static public function get(){
 	$receipt .= $ref;
 
 	// NET TOTAL
-	$netQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
-		" AND register_no=".$CORE_LOCAL->get('laneno').
+	$netQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+		WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
 	$netR = $db_a->query($netQ);
 	$net = $db_a->fetch_row($netR);
     $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
     $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
     $receipt .= "\n";
+	// CASH TOTAL
+    $caQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    	WHERE register_no=".$CORE_LOCAL->get('laneno').
+		" AND trans_subtype IN('CA')";
+	$caR = $db_a->query($caQ);
+	$ca = $db_a->fetch_row($caR);
+	$receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
+	$receipt .= substr($blank.number_format(($ca[0]),2),-8)."\n";
     // CASH + CHECK TOTAL
-    $tillQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
-		" AND register_no=".$CORE_LOCAL->get('laneno').
+    $tillQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    	WHERE AND register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('CA','CK')";
 	$tillR = $db_a->query($tillQ);
 	$till = $db_a->fetch_row($tillR);
 	$receipt .= "  ".substr("CA & CK Total: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($till[0]),2),-8)."\n";
 	// CARD TENDERS TOTAL
-    $cardQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric WHERE emp_no = ".$CORE_LOCAL->get("CashierNo").
-		" AND register_no=".$CORE_LOCAL->get('laneno').
+    $cardQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('DC','CC','FS','EC')";
 	$cardR = $db_a->query($cardQ);
 	$card = $db_a->fetch_row($cardR);
@@ -75,8 +83,8 @@ static public function get(){
 	$receipt .= str_repeat("\n", 5);
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" AND register_no=".$CORE_LOCAL->get('laneno').
+		$query = "select tdate from TenderTapeGeneric 
+			where register_no=".$CORE_LOCAL->get('laneno').
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -94,8 +102,7 @@ static public function get(){
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender 
-			from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and register_no=".$CORE_LOCAL->get('laneno').
+			from TenderTapeGeneric where register_no=".$CORE_LOCAL->get('laneno').
 			" and trans_subtype = '".$tender_code."' and (tender <> 0 OR tender <> -0) 
 			order by tdate";
 		$result = $db_a->query($query);
@@ -130,8 +137,7 @@ static public function get(){
 	$receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 	$query = "select tdate,register_no,trans_no,total
-	       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and register_no=".$CORE_LOCAL->get('laneno').
+	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 45 order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
@@ -164,8 +170,7 @@ static public function get(){
 	$receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 	$query = "select tdate,register_no,trans_no,total
-	       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and register_no=".$CORE_LOCAL->get('laneno').
+	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and  department = 49 order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
@@ -198,8 +203,7 @@ static public function get(){
 	$receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 	$query = "select tdate,register_no,trans_no,total
-	       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and register_no=".$CORE_LOCAL->get('laneno').
+	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 44 order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
