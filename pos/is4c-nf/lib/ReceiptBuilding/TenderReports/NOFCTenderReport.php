@@ -64,13 +64,13 @@ static public function get(){
 	$receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($ca[0]),2),-8)."\n";
     // CASH + CHECK TOTAL
-    $tillQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
-    	WHERE AND register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CA','CK')";
-	$tillR = $db_a->query($tillQ);
-	$till = $db_a->fetch_row($tillR);
-	$receipt .= "  ".substr("CA & CK Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($till[0]),2),-8)."\n";
+ //    $tillQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+ //    	WHERE AND register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN('CA','CK')";
+	// $tillR = $db_a->query($tillQ);
+	// $till = $db_a->fetch_row($tillR);
+	// $receipt .= "  ".substr("CA & CK Total: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($till[0]),2),-8)."\n";
 	// CARD TENDERS TOTAL
     $cardQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
