@@ -33,18 +33,30 @@ static public function get(){
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
 	$db_a = Database::mDataConnect();
-
+	$receipt = "";
 	$blank = "             ";
 	$fieldNames = "  ".substr("Time".$blank, 0, 13)
 			.substr("Lane".$blank, 0, 9)
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Emp #".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
-	$receipt = "";
+	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n";
+
+	$cashier_names = "";
+    $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
+        FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".employees e
+        WHERE d.emp_no = e.emp_no AND register_no = ". $CORE_LOCAL->get('laneno')."
+        GROUP BY d.emp_no ORDER BY d.tdate";
+
+    $cashierR = $db_a->query($cashierQ);
+
+    for ($i = 0; $i < $row = $db_a->fetch_array($cashierR); $i++) {
+            $cashier_names .= $row['cashier'].", ";
+    }
 
 	$receipt .= ReceiptLib::centerString("T E N D E R   R E P O R T")."\n";
 	$receipt .= $ref;
+	$receipt .= ReceiptLib::centerString("Cashiers: " . $cashier_names)."\n\n";
 
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
