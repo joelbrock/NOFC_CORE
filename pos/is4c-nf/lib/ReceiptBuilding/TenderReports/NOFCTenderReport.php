@@ -47,7 +47,7 @@ static public function get(){
 	$receipt .= $ref;
 
 	// NET TOTAL
-	$netQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
 		WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
 	$netR = $db_a->query($netQ);
@@ -58,132 +58,132 @@ static public function get(){
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
     $receipt .= "\n";
 	// CASH TOTAL
-    $caQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $caQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('CA')";
 	$caR = $db_a->query($caQ);
 	$ca = $db_a->fetch_row($caR);
 	$receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ca[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($ca[0]),2),-8).substr($blank.$ca[1],-8)."\n";
 	// CHECK TOTAL
-    $ckQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $ckQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('CK')";
 	$ckR = $db_a->query($ckQ);
 	$ck = $db_a->fetch_row($ckR);
 	$receipt .= "  ".substr("CHECK Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ck[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($ck[0]),2),-8).substr($blank.$ck[1],-8)."\n";
 	// CARD TENDERS TOTAL
-    $cardQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $cardQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN('DC','CC','FS','EC')";
 	$cardR = $db_a->query($cardQ);
 	$card = $db_a->fetch_row($cardR);
 	$receipt .= "  ".substr("DC / CC / EBT Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($card[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($card[0]),2),-8).substr($blank.$card[1],-8)."\n";
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
     $receipt .= "\n";
     // EQUITY TOTAL
-    $eqQ = "SELECT SUM(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
+    $eqQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 45 order by tdate";
 	$eqR = $db_a->query($eqQ);
 	$eq = $db_a->fetch_row($eqR);
 	$receipt .= "  ".substr("Member Equity: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($eq[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($eq[0]),2),-8).substr($blank.$eq[1],-8)."\n";
     // GIFT SOLD TOTAL
-    $gsQ = "select SUM(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
+    $gsQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 44 order by tdate";
 	$gsR = $db_a->query($gsQ);
 	$gs = $db_a->fetch_row($gsR);
 	$receipt .= "  ".substr("Gift Sold: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($gs[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($gs[0]),2),-8).substr($blank.$gs[1],-8)."\n";
     // GIFT TENDER TOTAL
-    $gtQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $gtQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype = 'TC'";
 	$gtR = $db_a->query($gtQ);
 	$gt = $db_a->fetch_row($gtR);
 	$receipt .= "  ".substr("Gift Tender: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($gt[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($gt[0]),2),-8).substr($blank.$gt[1],-8)."\n";
     // COUPON - VENDOR TOTAL
-    $mcQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $mcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('CP','MC')";
 	$mcR = $db_a->query($mcQ);
 	$mc = $db_a->fetch_row($mcR);
 	$receipt .= "  ".substr("Coupons - Vendor: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($mc[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($mc[0]),2),-8).substr($blank.$mc[1],-8)."\n";
     // COUPON - INSTORE TOTAL
-    $icQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $icQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('IC')";
 	$icR = $db_a->query($icQ);
 	$ic = $db_a->fetch_row($icR);
 	$receipt .= "  ".substr("Coupons - Instore: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ic[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($ic[0]),2),-8).substr($blank.$ic[1],-8)."\n";
     // COUPON - INSTORE TOTAL
-    $ptQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $ptQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('PT')";
 	$ptR = $db_a->query($ptQ);
 	$pt = $db_a->fetch_row($ptR);
 	$receipt .= "  ".substr("Patronage: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($pt[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($pt[0]),2),-8).substr($blank.$pt[1],-8)."\n";
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
     $receipt .= "\n";
     // INSTORE CHARGE TOTAL
-    $miQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $miQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('MI')";
 	$miR = $db_a->query($miQ);
 	$mi = $db_a->fetch_row($miR);
 	$receipt .= "  ".substr("Instore Charges: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($mi[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($mi[0]),2),-8).substr($blank.$mi[1],-8)."\n";
     // R/A TOTAL
-    $raQ = "SELECT SUM(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
+    $raQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 49 order by tdate";
 	$raR = $db_a->query($raQ);
 	$ra = $db_a->fetch_row($raR);
 	$receipt .= "  ".substr("R/A: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ra[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($ra[0]),2),-8).substr($blank.$ra[1],-8)."\n";
     // CREDIT CARD TOTAL
-    $ccQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $ccQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('CC')";
 	$ccR = $db_a->query($ccQ);
 	$cc = $db_a->fetch_row($ccR);
 	$receipt .= "  ".substr("Credit Card: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($cc[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($cc[0]),2),-8).substr($blank.$cc[1],-8)."\n";
     // DEBIT CARD TOTAL
-    $dcQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $dcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('DC')";
 	$dcR = $db_a->query($dcQ);
 	$dc = $db_a->fetch_row($dcR);
 	$receipt .= "  ".substr("Debit Card: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($dc[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($dc[0]),2),-8).substr($blank.$dc[1],-8)."\n";
     // EBT FOOD TOTAL
-    $fsQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $fsQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('FS')";
 	$fsR = $db_a->query($fsQ);
 	$fs = $db_a->fetch_row($fsR);
 	$receipt .= "  ".substr("EBT Food: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($fs[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($fs[0]),2),-8).substr($blank.$fs[1],-8)."\n";
     // EBT CASH TOTAL
-    $ecQ = "SELECT SUM(tender) AS net FROM TenderTapeGeneric 
+    $ecQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
 		" AND trans_subtype IN ('EC')";
 	$ecR = $db_a->query($ecQ);
 	$ec = $db_a->fetch_row($ecR);
 	$receipt .= "  ".substr("EBT Cash: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ec[0]),2),-8)."\n";
+	$receipt .= substr($blank.number_format(($ec[0]),2),-8).substr($blank.$ec[1],-8)."\n";
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
 	$receipt .= str_repeat("\n", 5);
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-		$query = "select tdate from TenderTapeGeneric 
+		$query = "select tdate from dlog 
 			where register_no=".$CORE_LOCAL->get('laneno').
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
@@ -201,9 +201,9 @@ static public function get(){
 
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
-		$query = "select tdate,register_no,emp_no,trans_no,tender 
-			from TenderTapeGeneric where register_no=".$CORE_LOCAL->get('laneno').
-			" and trans_subtype = '".$tender_code."' and (tender <> 0 OR tender <> -0) 
+		$query = "select tdate,register_no,emp_no,trans_no,total 
+			from dlog where register_no=".$CORE_LOCAL->get('laneno').
+			" and trans_subtype = '".$tender_code."' and (total <> 0 OR total <> -0) 
 			order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -214,14 +214,14 @@ static public function get(){
 		for ($i = 0; $i < $num_rows; $i++) {
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
-			if ($itemize == 1 && $row["tender"]) {
+			if ($itemize == 1 && $row["total"]) {
 				$receipt .= "  ".substr($timeStamp.$blank, 0, 13)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
 				.substr($blank.$row['emp_no'], -10)
-				.substr($blank.number_format($row["tender"], 2), -14)."\n";
+				.substr($blank.number_format($row["total"], 2), -14)."\n";
 			}
-			$sum += $row["tender"];
+			$sum += $row["total"];
 		}
 		
 		$receipt.= ReceiptLib::centerString("------------------------------------------------------");
