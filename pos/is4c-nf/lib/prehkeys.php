@@ -446,12 +446,7 @@ function tender($right, $strl) {
 	$CORE_LOCAL->set("tenderamt",$strl);
 	$unit_price = 0;
 
-	if ($tender_code == "FS") {
-		$CORE_LOCAL->set("boxMsg","WFC no longer excepts paper foods stamps. Please choose a different tender type");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
+	if ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than coupon limit<P>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
 		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
