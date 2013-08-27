@@ -31,8 +31,11 @@ class login3 extends BasicPage {
 	var $img;
 	var $msg;
 
+	protected $mask_input = True;
+
 	function preprocess(){
-		$this->color = "#004080";
+
+		$this->color = "coloredArea";
 		$this->img = $this->page_url."graphics/key-icon.png";
 		$this->msg = _("please enter password");
 		if (isset($_REQUEST['reginput'])){
@@ -44,7 +47,7 @@ class login3 extends BasicPage {
 				return False;
 			}
 			else {
-				$this->color = "#800000";
+				$this->color = "errorColoredArea";
 				$this->img = $this->page_url."graphics/redkey4.gif";
 				$this->msg = _("password invalid, please re-enter");
 			}
@@ -58,12 +61,11 @@ class login3 extends BasicPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background: {$this->color};\"";
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>
 		<div class="baseHeight">
-			<div class="colored centeredDisplay" <?php echo $style;?>>
+			<div class="<?php echo $this->color; ?> centeredDisplay">
 			<img alt="key" src='<?php echo $this->img ?>' />
 			<p>
 			<?php echo $this->msg ?>
@@ -72,7 +74,6 @@ class login3 extends BasicPage {
 		</div>
 		<?php
 		TransRecord::addactivity(3);
-		$CORE_LOCAL->set("scan","noScan");
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();

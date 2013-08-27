@@ -65,7 +65,8 @@ class mgrlogin extends NoInputPage {
 						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
-						$('div.colored').css('background',data.color);
+						$('div#cancelLoginBox').removeClass('coloredArea');
+						$('div#cancelLoginBox').addClass('errorColoredArea');
 						$('span.larger').html(data.heading);
 						$('span#localmsg').html(data.msg);
 						$('#reginput').val('');
@@ -78,15 +79,15 @@ class mgrlogin extends NoInputPage {
 		</script>
 		<?php
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
-		$style = "style=\"background:#004080;\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div id="cancelLoginBox" class="coloredArea centeredDisplay">
 		<span class="larger">
 		<?php echo _("confirm cancellation"); ?>
 		</span><br />
@@ -101,16 +102,13 @@ class mgrlogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","noScan");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,
-			'color'=>'#800000',
 			'msg'=>_('password invalid'),
 			'heading'=>_('re-enter manager password'),
 			'giveUp'=>false
@@ -148,12 +146,9 @@ class mgrlogin extends NoInputPage {
 	function cancelorder() {
 		global $CORE_LOCAL;
 
-		$CORE_LOCAL->set("msg",2);
 		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
-		$CORE_LOCAL->set("beep","rePoll");
 		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
-		$CORE_LOCAL->set("receiptType","cancelled");
 	}
 }
 

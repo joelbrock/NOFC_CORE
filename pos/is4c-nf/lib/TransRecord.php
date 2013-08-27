@@ -207,13 +207,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$db->smart_insert("localtemptrans",$values);
 
 	if ($strtransType == "I" || $strtransType == "D") {
-		$CORE_LOCAL->set("beep","goodBeep");
-		if ($intscale == 1) {
-			$CORE_LOCAL->set("screset","rePoll");
-		}
-		elseif ($CORE_LOCAL->get("weight") != 0) {
-			$CORE_LOCAL->set("screset","rePoll");
-		}
 		$CORE_LOCAL->set("repeatable",1);
 	}
 
@@ -221,8 +214,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("SNR",0);
-	$CORE_LOCAL->set("wgtRequested",0);
-	$CORE_LOCAL->set("nd",0);
 
 	if ($intscale == 1)
 		$CORE_LOCAL->set("lastWeight",$dblquantity);
@@ -520,9 +511,18 @@ static public function addcdnotify() {
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
   @param $foodstamp mark coupon foodstamp-able
+  @param $tax mark coupon as taxable
+
+  Marking a coupon as taxable will *reduce* the taxable
+  total by the coupon amount. This is not desirable in 
+  all tax jurisdictions. The ini setting 'CouponsAreTaxable'
+  controls whether the tax parameter is used.
 */
-static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0) {
-	self::addItem($strupc, " * Manufacturers Coupon", "I", "CP", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, $foodstamp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);	
+static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) {
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get('CouponsAreTaxable') !== 0)
+		$tax = 0;
+	self::addItem($strupc, " * Manufacturers Coupon", "I", "CP", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, $tax, $foodstamp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);	
 }
 
 /**

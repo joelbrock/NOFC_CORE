@@ -34,7 +34,6 @@ class virtualCouponList extends MainFramePage {
 
 	function preprocess(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		if (isset($_POST["selectlist"])){
 			$id = $_POST["selectlist"];
@@ -42,7 +41,6 @@ class virtualCouponList extends MainFramePage {
 			if ($id != "CL")
 				addVirtualCoupon($id);
 
-			$CORE_LOCAL->set("away",0);
 			changeBothPages("/gui-modules/input.php","/gui-modules/pos2.php");
 			return False;
 		}
@@ -64,7 +62,6 @@ class virtualCouponList extends MainFramePage {
 		$this->db = $sql;
 
 		if ($sql->num_rows($discountR) == 0){
-			$CORE_LOCAL->set("away",0);
 			$CORE_LOCAL->set("boxMsg","No virtual coupons available");
 			changeBothPages("/gui-modules/input.php","/gui-modules/boxMsg2.php");
 			return False;
@@ -130,7 +127,7 @@ class virtualCouponList extends MainFramePage {
 				.$row["name"]."</option>";
 		}
 		echo "</select></form></div>"
-			."<div class=\"centerOffset listboxText\">"
+			."<div class=\"centerOffset listboxText coloredText\">"
 			."use arrow keys to navigate<p>[esc] to cancel</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

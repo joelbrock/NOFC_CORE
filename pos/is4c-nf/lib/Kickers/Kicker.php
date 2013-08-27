@@ -34,6 +34,7 @@ class Kicker {
 	*/
 	function doKick(){
 		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 		$db = Database::tDataConnect();
 
 		$query = "select trans_id from localtemptrans where 
@@ -52,6 +53,8 @@ class Kicker {
 	  @return boolean
 	*/
 	function kickOnSignIn(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
 
@@ -61,6 +64,8 @@ class Kicker {
 	  @return boolean
 	*/
 	function kickOnSignOut(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
 }

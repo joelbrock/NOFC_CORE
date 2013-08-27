@@ -30,7 +30,7 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		$this->color ="#004080";
+		$this->color ="coloredArea";
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
 
@@ -44,7 +44,7 @@ class nslogin extends NoInputPage {
 				return False;
 			}
 			else {
-				$this->color ="#800000";
+				$this->color ="errorColoredArea";
 				$this->heading = _("re-enter manager password");
 				$this->msg = _("invalid password");
 			}
@@ -55,14 +55,14 @@ class nslogin extends NoInputPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js('reginput','nsform');
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background:{$this->color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->heading ?>
 		</span><br />
@@ -77,7 +77,6 @@ class nslogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#reginput').focus();\n");
 	} // END true_body() FUNCTION
 
