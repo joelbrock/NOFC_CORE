@@ -27,6 +27,29 @@
 */
 class NOFC_Kicker extends Kicker {
 
+    function doKick(){
+        global $CORE_LOCAL;
+        $db = Database::tDataConnect();
+
+        $query = "SELECT trans_id FROM localtemptrans WHERE 
+            (trans_subtype = 'CA' AND total <> 0) 
+            OR description LIKE 'Stamp%'";
+
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
+
+        $ret = ($num_rows > 0) ? True : False;
+
+        // use session to override default behavior
+        // based on specific cashier actions rather
+        // than transaction state
+        $override = $CORE_LOCAL->get('kickOverride');
+        $CORE_LOCAL->set('kickOverride',False);
+        if ($override === True) $ret = True;
+
+        return $ret;
+    }
+
 	function kickOnSignIn(){
 		$ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
 		return $ret;
