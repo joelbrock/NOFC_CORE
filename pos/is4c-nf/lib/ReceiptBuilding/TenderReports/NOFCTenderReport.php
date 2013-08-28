@@ -72,7 +72,7 @@ static public function get(){
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
 		WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC')";
+		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC') AND tdate >= '$shiftCutoff'";
 	$netR = $db_a->query($netQ);
 	$net = $db_a->fetch_row($netR);
     $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
@@ -83,7 +83,7 @@ static public function get(){
 	// CASH TOTAL
     $caQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CA')";
+		" AND trans_subtype IN('CA') AND tdate >= '$shiftCutoff'";
 	$caR = $db_a->query($caQ);
 	$ca = $db_a->fetch_row($caR);
 	$receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
@@ -91,7 +91,7 @@ static public function get(){
 	// CHECK TOTAL
     $ckQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CK')";
+		" AND trans_subtype IN('CK') AND tdate >= '$shiftCutoff'";
 	$ckR = $db_a->query($ckQ);
 	$ck = $db_a->fetch_row($ckR);
 	$receipt .= "  ".substr("CHECK Total: ".$blank.$blank,0,20);
@@ -99,7 +99,7 @@ static public function get(){
 	// CARD TENDERS TOTAL
     $cardQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('DC','CC','FS','EC')";
+		" AND trans_subtype IN('DC','CC','FS','EC') AND tdate >= '$shiftCutoff'";
 	$cardR = $db_a->query($cardQ);
 	$card = $db_a->fetch_row($cardR);
 	$receipt .= "  ".substr("DC / CC / EBT Total: ".$blank.$blank,0,20);
@@ -108,14 +108,14 @@ static public function get(){
     $receipt .= "\n";
     // EQUITY TOTAL
     $eqQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and department = 45 order by tdate";
+			" and department = 45 AND tdate >= '$shiftCutoff'";
 	$eqR = $db_a->query($eqQ);
 	$eq = $db_a->fetch_row($eqR);
 	$receipt .= "  ".substr("Member Equity: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($eq[0]),2),-8).substr($blank.$eq[1],-8)."\n";
     // GIFT SOLD TOTAL
     $gsQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and department = 44 order by tdate";
+			" and department = 44 AND tdate >= '$shiftCutoff'";
 	$gsR = $db_a->query($gsQ);
 	$gs = $db_a->fetch_row($gsR);
 	$receipt .= "  ".substr("Gift Sold: ".$blank.$blank,0,20);
@@ -123,7 +123,7 @@ static public function get(){
     // GIFT TENDER TOTAL
     $gtQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype = 'TC'";
+		" AND trans_subtype = 'TC' AND tdate >= '$shiftCutoff'";
 	$gtR = $db_a->query($gtQ);
 	$gt = $db_a->fetch_row($gtR);
 	$receipt .= "  ".substr("Gift Tender: ".$blank.$blank,0,20);
@@ -131,7 +131,7 @@ static public function get(){
     // COUPON - VENDOR TOTAL
     $mcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('CP','MC')";
+		" AND trans_subtype IN ('CP','MC') AND tdate >= '$shiftCutoff'";
 	$mcR = $db_a->query($mcQ);
 	$mc = $db_a->fetch_row($mcR);
 	$receipt .= "  ".substr("Coupons - Vendor: ".$blank.$blank,0,20);
@@ -139,7 +139,7 @@ static public function get(){
     // COUPON - INSTORE TOTAL
     $icQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('IC')";
+		" AND trans_subtype IN ('IC') AND tdate >= '$shiftCutoff'";
 	$icR = $db_a->query($icQ);
 	$ic = $db_a->fetch_row($icR);
 	$receipt .= "  ".substr("Coupons - Instore: ".$blank.$blank,0,20);
@@ -147,7 +147,7 @@ static public function get(){
     // COUPON - INSTORE TOTAL
     $ptQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('PT')";
+		" AND trans_subtype IN ('PT') AND tdate >= '$shiftCutoff'";
 	$ptR = $db_a->query($ptQ);
 	$pt = $db_a->fetch_row($ptR);
 	$receipt .= "  ".substr("Patronage: ".$blank.$blank,0,20);
@@ -157,14 +157,14 @@ static public function get(){
     // INSTORE CHARGE TOTAL
     $miQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('MI')";
+		" AND trans_subtype IN ('MI') AND tdate >= '$shiftCutoff'";
 	$miR = $db_a->query($miQ);
 	$mi = $db_a->fetch_row($miR);
 	$receipt .= "  ".substr("Instore Charges: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($mi[0]),2),-8).substr($blank.$mi[1],-8)."\n";
     // R/A TOTAL
     $raQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and department = 49 order by tdate";
+			" and department = 49 AND tdate >= '$shiftCutoff'";
 	$raR = $db_a->query($raQ);
 	$ra = $db_a->fetch_row($raR);
 	$receipt .= "  ".substr("R/A: ".$blank.$blank,0,20);
@@ -172,7 +172,7 @@ static public function get(){
     // CREDIT CARD TOTAL
     $ccQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('CC')";
+		" AND trans_subtype IN ('CC') AND tdate >= '$shiftCutoff'";
 	$ccR = $db_a->query($ccQ);
 	$cc = $db_a->fetch_row($ccR);
 	$receipt .= "  ".substr("Credit Card: ".$blank.$blank,0,20);
@@ -180,7 +180,7 @@ static public function get(){
     // DEBIT CARD TOTAL
     $dcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('DC')";
+		" AND trans_subtype IN ('DC') AND tdate >= '$shiftCutoff'";
 	$dcR = $db_a->query($dcQ);
 	$dc = $db_a->fetch_row($dcR);
 	$receipt .= "  ".substr("Debit Card: ".$blank.$blank,0,20);
@@ -188,7 +188,7 @@ static public function get(){
     // EBT FOOD TOTAL
     $fsQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('FS')";
+		" AND trans_subtype IN ('FS') AND tdate >= '$shiftCutoff'";
 	$fsR = $db_a->query($fsQ);
 	$fs = $db_a->fetch_row($fsR);
 	$receipt .= "  ".substr("EBT Food: ".$blank.$blank,0,20);
@@ -196,7 +196,7 @@ static public function get(){
     // EBT CASH TOTAL
     $ecQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('EC')";
+		" AND trans_subtype IN ('EC') AND tdate >= '$shiftCutoff'";
 	$ecR = $db_a->query($ecQ);
 	$ec = $db_a->fetch_row($ecR);
 	$receipt .= "  ".substr("EBT Cash: ".$blank.$blank,0,20);
@@ -208,7 +208,8 @@ static public function get(){
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
 		$query = "select tdate from dlog 
 			where register_no=".$CORE_LOCAL->get('laneno').
-			" and trans_subtype = '".$tender_code."' order by tdate";
+			" and trans_subtype = '".$tender_code."'
+			 AND tdate >= '$shiftCutoff' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 		if ($num_rows <= 0) continue;
@@ -227,7 +228,7 @@ static public function get(){
 		$query = "select tdate,register_no,emp_no,trans_no,total 
 			from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and trans_subtype = '".$tender_code."' and (total <> 0 OR total <> -0) 
-			order by tdate";
+			 AND tdate >= '$shiftCutoff' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 		
@@ -261,7 +262,7 @@ static public function get(){
 
 	$query = "select tdate,register_no,emp_no,trans_no,total
 	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and department = 45 order by tdate";
+			" and department = 45 AND tdate >= '$shiftCutoff' order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
 	
@@ -295,7 +296,7 @@ static public function get(){
 
 	$query = "select tdate,register_no,emp_no,trans_no,total
 	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and  department = 49 order by tdate";
+			" and  department = 49 AND tdate >= '$shiftCutoff' order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
 	$itemize = 1;	
@@ -328,7 +329,7 @@ static public function get(){
 
 	$query = "select tdate,register_no,emp_no,trans_no,total
 	       	from dlog where register_no=".$CORE_LOCAL->get('laneno').
-			" and department = 44 order by tdate";
+			" and department = 44 AND tdate >= '$shiftCutoff' order by tdate";
 	$result = $db_a->query($query);
 	$num_rows = $db_a->num_rows($result);
 	$itemize = 1;
