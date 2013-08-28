@@ -51,10 +51,12 @@ class NOFC_Kicker extends Kicker {
     }
 
 	function kickOnSignIn(){
-		$ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
+		global $CORE_LOCAL;
+        $ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
 		return $ret;
 	}
 	function kickOnSignOut(){
+        global $CORE_LOCAL;
 		$ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
 		return $ret;
 	}
