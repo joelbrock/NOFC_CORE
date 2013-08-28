@@ -30,6 +30,17 @@ class NOFCTenderReport extends TenderReport {
 static public function get(){
 	global $CORE_LOCAL;
 
+	$db = Database::mDataConnect();
+	$shiftCutoff = date('Y-m-d 00:00:00');
+	$lookup = $db->query("SELECT MAX(datetime) FROM dtransactions 
+		WHERE upc='ENDOFSHIFT' AND 
+		register_no=".$CORE_LOCAL->get('laneno'));
+	if ($db->num_rows($lookup) > 0){
+		$row = $db->fetch_row($lookup);
+		if ($row[0] != '') $shiftCutoff = $row[0];
+	}
+	TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
+
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
 	$db_a = Database::mDataConnect();
