@@ -43,21 +43,25 @@ class NOFC_Kicker extends Kicker {
         // use session to override default behavior
         // based on specific cashier actions rather
         // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',False);
-        if ($override === True) $ret = True;
+        // $override = $CORE_LOCAL->get('kickOverride');
+        // $CORE_LOCAL->set('kickOverride',False);
+        // if ($override === True) $ret = True;
 
         return $ret;
     }
 
 	function kickOnSignIn(){
 		global $CORE_LOCAL;
-        $ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
+        $ret = True;       
+        if($CORE_LOCAL->get('training') == 1) $ret = False;
+        if($CORE_LOCAL->get('laneno') == 2) $ret = False;
 		return $ret;
 	}
 	function kickOnSignOut(){
         global $CORE_LOCAL;
-		$ret = ($CORE_LOCAL->get('laneno') == 2) ? False : True;
+        $ret = True;       
+        if($CORE_LOCAL->get('training') == 1) $ret = False;
+        if($CORE_LOCAL->get('laneno') == 2) $ret = False;
 		return $ret;
 	}
 }
