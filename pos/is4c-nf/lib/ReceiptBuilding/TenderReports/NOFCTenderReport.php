@@ -56,19 +56,19 @@ static public function get(){
 
 	$cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
-        FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".employees e
+        FROM dlog d, is4c_op.employees e
         WHERE d.emp_no = e.emp_no AND register_no = ". $CORE_LOCAL->get('laneno')."$excl
         GROUP BY d.emp_no ORDER BY d.tdate";
 
     $cashierR = $db_a->query($cashierQ);
 
-    for ($i = 0; $i < $row = $db_a->fetch_array($cashierR); $i++) {
+    while(row = $db_a->fetch_array($cashierR)) {
             $cashier_names .= $row['cashier'].", ";
     }
 
 	$receipt .= ReceiptLib::centerString("T E N D E R   R E P O R T")."\n";
 	$receipt .= $ref;
-	$receipt .= ReceiptLib::centerString("Cashiers: " . $cashier_names)."\n\n";
+	$receipt .= ReceiptLib::centerString("Lane: ".$CORE_LOCAL->get('laneno')." - Cashiers: " . $cashier_names)."\n\n";
 
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
