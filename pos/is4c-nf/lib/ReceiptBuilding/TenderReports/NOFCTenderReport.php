@@ -62,7 +62,7 @@ static public function get(){
 
     $cashierR = $db_a->query($cashierQ);
 
-    while(row = $db_a->fetch_array($cashierR)) {
+    while($row = $db_a->fetch_array($cashierR)) {
             $cashier_names .= $row['cashier'].", ";
     }
 
