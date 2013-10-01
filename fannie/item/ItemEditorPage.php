@@ -47,8 +47,8 @@ class ItemEditorPage extends FanniePage {
 	private $msgs = '';
 
 	function preprocess(){
-		$this->title = 'Fannie - Item Maintanence';
-		$this->header = 'Item Maintanence';
+		$this->title = 'Fannie - Item Maintenance';
+		$this->header = 'Item Maintenance';
 
 		if (FormLib::get_form_value('searchupc') !== ''){
 			$this->mode = 'search_results';
@@ -279,8 +279,11 @@ class ItemEditorPage extends FanniePage {
 		foreach($FANNIE_PRODUCT_MODULES as $mod){
 			if ($mod == '') continue;
 			if (isset($shown[$mod])) continue;
+			if (!class_exists($mod))
+				include_once(dirname(__FILE__).'/modules/'.$mod.'.php');
+			if (!class_exists($mod)) continue;
 			$obj = new $mod();
-			$ret .= $mod->ShowEditForm($upc);
+			$ret .= $obj->ShowEditForm($upc);
 		}
 
 		$ret .= '</form>';
