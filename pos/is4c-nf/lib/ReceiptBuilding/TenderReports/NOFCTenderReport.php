@@ -32,7 +32,7 @@ static public function get(){
 
 	$db = Database::mDataConnect();
 	$shiftCutoff = date('Y-m-d 00:00:00');
-	$excl = " AND emp_no <> 9999 ";
+	$excl = " AND emp_no <> 9999 AND trans_type <> 'L' ";
 	$lookup = $db->query("SELECT MAX(datetime) FROM dtransactions 
 		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
 		register_no=".$CORE_LOCAL->get('laneno'));
@@ -57,7 +57,7 @@ static public function get(){
 	$cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
         FROM dlog d, is4c_op.employees e
-        WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno')." AND d. emp_no <> 9999 
+        WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
         GROUP BY d.emp_no ORDER BY d.tdate";
 
     $cashierR = $db_a->query($cashierQ);
