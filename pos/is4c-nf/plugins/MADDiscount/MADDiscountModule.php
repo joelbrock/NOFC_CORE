@@ -26,7 +26,7 @@ class MADDiscountModule extends DiscountModule {
 		global $CORE_LOCAL;
 		$discount = parent::calculate();
 		if ($CORE_LOCAL->get('MADDiscountFlag')===1){
-			$extra = 0.05 * $CORE_LOCAL->get('discountableTotal');
+			$extra = $CORE_LOCAL->get('discountableTotal') * $CORE_LOCAL->get('MADDiscountPercent');
 			$discount = MiscLib::truncate2($discount + $extra);
 		}
 		return $discount;
