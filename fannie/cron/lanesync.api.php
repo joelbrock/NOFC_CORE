@@ -23,17 +23,21 @@
 
 /* HELP
 
-   lanesync.api.php
+   nightly.lanesync.api.php
 
    Retrieve to the server from the following tables on all lanes:
-		valutecRequest, valutecRequestMod, valutecResponse
+    valutecRequest, valutecRequestMod, valutecResponse
    Replace the following tables on all lanes with contents of server table:
     products, custdata, memberCards, employees, departments, custReceiptMessage
    Optionally also replace:
     productUser
 
    If you can use fannie/sync/special/generic.mysql.php
-	  the transfers will go much faster.
+    the transfers will go much faster.
+
+   Coordinate this with cronjobs such as nightly.batch.php
+    that update the tables this is pushing to the lanes
+    so that the lanes have the most current data.
 
   Replacement for nightly.lanesync.php using Fannie's API
   instead of cURL
@@ -41,33 +45,41 @@
 */
 
 include('../config.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/cron_msg.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 set_time_limit(0);
 
 foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $table) {
-	$result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
+    echo cron_msg($result['messages']);
 }
 
-
 $regularPushTables = array(
-	'products',
-	'custdata',
-	'memberCards',
-	'custReceiptMessage',
-	'employees',
-	'departments');
+    'products',
+    'custdata',
+    'memberCards',
+    'custReceiptMessage',
+    'employees',
+    'departments',
+    'houseCoupons',
+    'houseVirtualCoupons'
+);
 foreach ($regularPushTables as $table) {
-	$result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
 }
 
 if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == True ) {
-	$result = SyncLanes::push_table('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::push_table('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
 }
+
+if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+    $result = SyncLanes::push_table('tenders', 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
+}
+
 
 echo cron_msg(basename(__FILE__) ." done.");
 

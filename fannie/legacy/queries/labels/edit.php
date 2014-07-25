@@ -1,7 +1,10 @@
 <?php
-include('../../../config.php');
 
-require($FANNIE_ROOT.'src/SQLManager.php');
+include('../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+require('../../sql/SQLManager.php');
 include('../../db.php');
 
 $id = 0;
@@ -10,7 +13,7 @@ if (isset($_REQUEST["id"])){
 }
 
 if (isset($_POST["submit"])){
-	$queries = array();
+    $tag = new ShelftagsModel($sql);
 	for ($i = 0; $i < count($_POST["upc"]); $i++){
 		$upc = $_POST["upc"][$i];
 		$desc = "";
@@ -30,18 +33,17 @@ if (isset($_POST["submit"])){
 		$ppo = '';
 		if (isset($_POST["ppo"][$i])) $ppo = $_POST["ppo"][$i];
 
-		$queries[$i] = "UPDATE shelftags SET description='$desc',
-				normal_price=$price,
-				brand='$brand',
-				sku='$sku',
-				size='$size',
-				units='$units',
-				vendor='$vendor',
-				pricePerUnit='$ppo'
-				WHERE upc='$upc' and id=$id";
-	}
-	foreach ($queries as $q){
-		$r = $sql->query($q);
+        $tag->id($id);
+        $tag->upc($upc);
+        $tag->description($desc);
+        $tag->normal_price($price);
+        $tag->brand($brand);
+        $tag->sku($sku);
+        $tag->size($size);
+        $tag->units($units);
+        $tag->vendor($vendor);
+        $tag->pricePerUnit($ppo);
+        $tag->save();
 	}
 	header("Location: index.php");
 	return;
@@ -65,20 +67,19 @@ echo "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th></tr>";
 
 $class = array("one","two");
 $c = 1;
-$query = "select upc,description,normal_price,brand,sku,size,units,vendor,pricePerUnit from shelftags
-	where id=$id order by upc";
-$result = $sql->query($query);
-while ($row = $sql->fetch_row($result)){
+$tags = new ShelftagsModel($sql);
+$tags->id($id);
+foreach($tags->find() as $tag) {
 	echo "<tr class=$class[$c]>";
-	echo "<td>$row[0]</td><input type=hidden name=upc[] value=\"$row[0]\" />";
-	echo "<td><input type=text name=desc[] value=\"$row[1]\" size=25 /></td>";
-	echo "<td><input type=text name=price[] value=\"$row[2]\" size=5 /></td>";
-	echo "<td><input type=text name=brand[] value=\"$row[3]\" size=13 /></td>";
-	echo "<td><input type=text name=sku[] value=\"$row[4]\" size=6 /></td>";
-	echo "<td><input type=text name=size[] value=\"$row[5]\" size=6 /></td>";
-	echo "<td><input type=text name=units[] value=\"$row[6]\" size=4 /></td>";
-	echo "<td><input type=text name=vendor[] value=\"$row[7]\" size=7 /></td>";
-	echo "<td><input type=text name=ppo[] value=\"$row[8]\" size=10 /></td>";
+    echo "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
+    echo "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" size=25 /></td>";
+    echo "<td><input type=text name=price[] value=\"" . $tag->normal_price() . "\" size=5 /></td>";
+    echo "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" size=13 /></td>";
+    echo "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" size=6 /></td>";
+    echo "<td><input type=text name=size[] value=\"" . $tag->size() . "\" size=6 /></td>";
+    echo "<td><input type=text name=units[] value=\"" . $tag->units() . "\" size=4 /></td>";
+    echo "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" size=7 /></td>";
+    echo "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" size=10 /></td>";
 	echo "</tr>";
 	$c = ($c+1)%2;
 }

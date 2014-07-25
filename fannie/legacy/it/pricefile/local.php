@@ -25,16 +25,16 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 	echo "<th>Likecode</th><th>Description</th><th>Local</th>";
 	echo "</tr>";
 	echo "<form action=local.php method=post>";
+    $q = $sql->prepare("select l.likeCodeDesc
+        from likeCodes as l where
+        l.likecode=?");
 	while (!feof($fp)){
 		$line = fgets($fp);
 		$data = csv_parser($line);
 
 		if (!is_numeric($data[$LC_COL])) continue;
 
-		$q = "select l.likeCodeDesc
-			from likeCodes as l where
-			l.likecode=".$data[$LC_COL]; 
-		$r = $sql->query($q);
+		$r = $sql->execute($q, array($data[$LC_COL]));
 		if ($sql->num_rows($r) == 0){
 			echo "<i>Error - unknown like code #".$data[$LC_COL]."</i><br />";
 			continue;
@@ -65,16 +65,16 @@ else if (isset($_POST['likecode'])){
 	$likecodes = $_POST['likecode'];
 	$local = $_POST['local'];
 
+    $q = $sql->prepare("update products as p left join upcLike as u on p.upc=u.upc
+        set local=?
+        where u.likecode=?");
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$lval = 0;
 		if ($local[$i] == '300') $lval = 2;
 		elseif ($local[$i] == 'S.C.') $lval = 1;
-		$q = "update products as p left join upcLike as u on p.upc=u.upc
-			set local=$lval
-			where u.likecode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to local =>".$local[$i]."<br />";
-		$sql->query($q);
+		$sql->execute($q, array($lval, $likecodes[$i]));
 	}
 
 	echo "<b>Pushing updates to the lanes</b><br />";
@@ -88,7 +88,8 @@ else{
 </head>
 <body>
 Update local status by like code<br />
-File format: CSV, Likecode in column A, Anything in B if local, blank in B if not
+File format: CSV, Likecode in column A, one (1) in column B for Superior Compact,
+two (2) in column B for 300 mi radius, anything else for non-local.
 <p />
 <form enctype="multipart/form-data" action="local.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />

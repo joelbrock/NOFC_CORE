@@ -10,25 +10,27 @@ $numbers = array("zero","one","two","three","four","five","six","seven",
 		"fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
 $cards = "(";
+$args = array();
 foreach($_POST["cardno"] as $c){
-	$cards .= $c.",";
+	$cards .= "?,";
+    $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
-$selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
+$selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
 		m.street,'',m.city,m.state,
 		m.zip,n.payments,
 		YEAR(d.end_date),MONTH(d.end_date),DAY(d.end_date)
 		FROM meminfo AS m LEFT JOIN
 		custdata AS c ON m.card_no=c.CardNo
 		AND c.personNum=1 LEFT JOIN
-		is4c_trans.newBalanceStockToday_test AS n
+		is4c_trans.equity_live_balance AS n
 		on m.card_no = n.memnum
 		LEFT JOIN memDates AS d ON m.card_no=d.card_no
 		WHERE CardNo IN $cards
-		ORDER BY m.card_no"; 
-$selAddR = $sql->query($selAddQ);
+		ORDER BY m.card_no"); 
+$selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
 

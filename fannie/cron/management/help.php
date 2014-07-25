@@ -24,17 +24,17 @@
 
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 17Oct2012 Eric Lee noted:
-	*  This is meant to be called by ../management/index.php, which base64_encode()'s fn.
+    * 17Oct2012 Eric Lee noted:
+    *  This is meant to be called by ../management/index.php, which base64_encode()'s fn.
 
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 17Oct2012 Eric Lee Add comments, error checks.
-	*            Add checkBase64Encoded().
-	*            Test for base64_encoded and if not use urldecode() instead.
-	*            Add window.close() button.
+    * 17Oct2012 Eric Lee Add comments, error checks.
+    *            Add checkBase64Encoded().
+    *            Test for base64_encoded and if not use urldecode() instead.
+    *            Add window.close() button.
 
 */
 
@@ -49,59 +49,69 @@
  * Source: http://ca3.php.net/manual/en/function.base64-decode.php
  */
 function checkBase64Encoded($encodedString) {
-	$length = strlen($encodedString);
+    $length = strlen($encodedString);
  
-	// Check every character.
-	for ($i = 0; $i < $length; ++$i) {
-		$c = $encodedString[$i];
-		if (
-			($c < '0' || $c > '9')
-			&& ($c < 'a' || $c > 'z')
-			&& ($c < 'A' || $c > 'Z')
-			&& ($c != '+')
-			&& ($c != '/')
-			&& ($c != '=')
-		) {
-			// Bad character found.
-			return false;
-		}
-	}
-	// Only good characters found.
-	return true;
+    // Check every character.
+    for ($i = 0; $i < $length; ++$i) {
+        $c = $encodedString[$i];
+        if (
+            ($c < '0' || $c > '9')
+            && ($c < 'a' || $c > 'z')
+            && ($c < 'A' || $c > 'Z')
+            && ($c != '+')
+            && ($c != '/')
+            && ($c != '=')
+        ) {
+            // Bad character found.
+            return false;
+        }
+    }
+    // Only good characters found.
+    return true;
 }
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$preload = FannieAPI::listModules('FannieTask');
 
 $fn = isset($_REQUEST['fn'])?$_REQUEST['fn']:'';
 if ($fn == ''){
-	echo "No file specified";
-	exit;
+    echo "No file specified";
+    exit;
 }
 
 if ( checkBase64Encoded($fn) ) {
-	$fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
+    $fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
 } else {
-	$fn = $FANNIE_ROOT.'cron/'.urldecode($fn);
-}
-if ( ! file_exists($fn) ){
-	echo "File: >${fn}< does not exist.";
-	exit;
+    $fn = $FANNIE_ROOT.'cron/'.urldecode($fn);
 }
 
-// Read the file into a string.
-$data = file_get_contents($fn);
-/* Parse into an array ($tokens) of arrays($t), one for each token where:
- * $t[0] the kind of token, e.g. T_COMMENT
- * $t[1] the content of the token, e.g. the entire comment.
- * $t[2] the line number in the file
-*/
-$tokens = token_get_all($data);
-$doc = "";
-foreach($tokens as $t){
-	if ($t[0] == T_COMMENT){
-		if (strstr($t[1],"HELP"))
-			$doc .= $t[1]."\n";
-	}
+if (!file_exists($fn) && !class_exists(basename($fn))){
+    echo "File: >${fn}< does not exist.";
+    exit;
+}
+
+$doc = '';
+if (file_exists($fn)) {
+    // Read the file into a string.
+    $data = file_get_contents($fn);
+    /* Parse into an array ($tokens) of arrays($t), one for each token where:
+     * $t[0] the kind of token, e.g. T_COMMENT
+     * $t[1] the content of the token, e.g. the entire comment.
+     * $t[2] the line number in the file
+    */
+    $tokens = token_get_all($data);
+    $doc = "";
+    foreach($tokens as $t){
+        if ($t[0] == T_COMMENT){
+            if (strstr($t[1],"HELP"))
+                $doc .= $t[1]."\n";
+        }
+    }
+} else {
+    $class = basename($fn);
+    $obj = new $class();
+    $doc = $obj->description;
 }
 
 echo "<html><head><title>";
@@ -109,9 +119,9 @@ echo basename($fn);
 echo "</title></head><body>";
 echo "<pre>";
 if (!empty($doc))
-	echo $doc;
+    echo $doc;
 else
-	echo "Sorry, no documentation for this script: >{$fn}<";
+    echo "Sorry, no documentation for this script: >{$fn}<";
 echo "</pre>";
 echo "<p><button onclick='window.close();'>Close Window</button></p>";
 echo "</body></html>";

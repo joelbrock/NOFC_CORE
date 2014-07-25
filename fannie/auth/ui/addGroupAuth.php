@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 include('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Add Group Authorization';
 $header = 'Fannie : Auth : Add Group Authorization';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -52,11 +51,11 @@ else {
   echo "<table cellspacing=3 cellpadding=3>";
 echo "<tr><th>Group name</th><td><select name=name>";
 foreach(getGroupList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select></td></tr>";
 echo "<tr><th>Authorization</th><td><select name=class>";
 foreach(getAuthList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select></td></tr>";
   echo "<tr><td>Subclass start:</td><td><input type=text name=start value=all></td></tr>";
   echo "<tr><td>Subclass end:</td><td><input type=text name=end value=all></td></tr>";
@@ -65,5 +64,5 @@ echo "</select></td></tr>";
   echo "<p /><a href=menu.php>Main menu</a>";
 }
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>
