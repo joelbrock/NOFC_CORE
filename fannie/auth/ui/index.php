@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 require('../login.php');
+include("../../config.php");
 
 $current_user = checkLogin();
 
@@ -29,7 +30,7 @@ if (!$current_user){
   header("Location: loginform.php");
 }
 else {
-  header("Location: menu.php");
+  header("Location: AuthIndexPage.php");
 }
 
 ?>

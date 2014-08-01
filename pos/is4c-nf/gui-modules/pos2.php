@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
- 
 session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -31,7 +29,8 @@ class pos2 extends BasicPage {
 
 	var $display;
 
-	function preprocess(){
+	function preprocess()
+    {
 		global $CORE_LOCAL;
 		$this->display = "";
 
@@ -49,6 +48,7 @@ class pos2 extends BasicPage {
 
 		if ($CORE_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
 			$entered = $CORE_LOCAL->get("strRemembered");
+            $CORE_LOCAL->set('strRemembered', '');
 		}
 		$CORE_LOCAL->set("strEntered",$entered);
 
@@ -151,28 +151,32 @@ class pos2 extends BasicPage {
 		}
 
 		if (isset($json['receipt']) && $json['receipt'] != False){
-			$this->add_onload_command("receiptFetch('".$json['receipt']."');\n");
+            $ref = isset($json['trans_num']) ? $json['trans_num'] : ReceiptLib::mostRecentReceipt();
+			$this->add_onload_command("receiptFetch('" . $json['receipt'] . "', '" . $ref . "');\n");
 		}
 
-		return True;
+        if ($CORE_LOCAL->get('CustomerDisplay') === true) {
+            $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
+            $this->add_onload_command("setCustomerURL('{$child_url}');\n");
+            $this->add_onload_command("reloadCustomerDisplay();\n");
+        }
+
+		return true;
 	}
 
 	function head_content(){
 		global $CORE_LOCAL;
 		?>
 		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
+        <script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$('#reginput').val('');
-			//if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'
-			 //   || str == 'U' || str == 'D'){
-				clearTimeout(screenLockVar);
-				runParser(str,'<?php echo $this->page_url; ?>');
-				enableScreenLock();
-				return false;
-			//}
-			//return true;
+            clearTimeout(screenLockVar);
+            runParser(str,'<?php echo $this->page_url; ?>');
+            enableScreenLock();
+            return false;
 		}
 		function parseWrapper(str){
 			$('#reginput').val(str);
@@ -185,17 +189,27 @@ class pos2 extends BasicPage {
 		function lockScreen(){
 			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 		}
-		function receiptFetch(r_type){
+		function receiptFetch(r_type, ref){
 			$.ajax({
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
-				data: 'receiptType='+r_type,
+				data: 'receiptType='+r_type+'&ref='+ref,
 				dataType: 'json',
 				cache: false,
+                error: function() {
+                    var icon = $('#receipticon').attr('src');
+                    var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
+                    $('#receipticon').attr('src', newicon);
+                },
 				success: function(data){
 					if (data.sync){
 						ajaxTransactionSync('<?php echo $this->page_url; ?>');
 					}
+                    if (data.error) {
+                        var icon = $('#receipticon').attr('src');
+                        var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
+                        $('#receipticon').attr('src', newicon);
+                    }
 				},
 				error: function(e1){
 				}
@@ -204,25 +218,53 @@ class pos2 extends BasicPage {
 		function inputRetry(str){
 			parseWrapper(str);
 		}
+        /**
+          Replace instances of 'SCAL' with the scale's weight. The command
+          is triggered by the E keypress but that letter is never actually
+          added to the input.
+        */
+        function getScaleWeight()
+        {
+            var current_input = $('#reginput').val().toUpperCase();
+            if (current_input.indexOf('SCAL') != -1) {
+                var wgt = $.trim($('#scaleBottom').html());
+                wgt = parseFloat(wgt);
+                if (isNaN(wgt) || wgt == 0.00) {
+                    // weight not available
+                    return true;
+                } else {
+                    var new_input = current_input.replace('SCAL', wgt);
+                    $('#reginput').val(new_input);
+                    
+                    return false;
+                }
+            }
+
+            return true;
+        }
 		</script>
 		<?php
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
+        $lines = $CORE_LOCAL->get('screenLines');
+        if (!$lines === '' || !is_numeric($lines)) {
+            $lines = 11;
+        }
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
 		if ($CORE_LOCAL->get("timeout") != "")
 			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:
-						parseWrapper('U11');
+						parseWrapper('U$lines');
 						break;
 					case 38:
 						parseWrapper('U');
 						break;
 					case 34:
-						parseWrapper('D11');
+						parseWrapper('D$lines');
 						break;
 					case 40:
 						parseWrapper('D');
@@ -230,6 +272,9 @@ class pos2 extends BasicPage {
 					case 9:
 						parseWrapper('TFS');
 						return false;
+                    case 69:
+                    case 101:
+                        return getScaleWeight();
 					}
 				});\n");
 		/*
@@ -294,6 +339,7 @@ class pos2 extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new pos2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new pos2();
 
 ?>

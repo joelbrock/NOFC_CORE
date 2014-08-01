@@ -21,22 +21,23 @@
 
 *********************************************************************************/
 
+header("Location: AuthIndexPage.php");
+
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Menu';
 $header = 'Fannie : Auth : Menu';
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 $name = checkLogin();
 if (!$name){
   echo "You must be <a href=loginform.php>logged in</a> to use this</a>";
 }
 else {
-  $priv = checkAuth($name,'admin');
+  $priv = validateUserQuiet('admin');
   $options = 'all';
   if (!$priv){
-    $options = 'limited';
+        $options = 'limited';
   }
 
   /* password change only allowed if not using
@@ -56,7 +57,7 @@ else {
     echo "<li><a href=deleteUser.php>Delete User</a></li>";
     echo "<li><a href=deleteAuth.php>Delete a User's authorizations</a></li>";
     if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-			echo "<li><a href=resetUserPassword.php>Reset a User's password</a></li>";
+            echo "<li><a href=resetUserPassword.php>Reset a User's password</a></li>";
     echo "<br />";
     echo "<li><a href=viewGroups.php>View Groups</a></li>";
     echo "<li><a href=groupDetail.php>View Details of a Group</a></li>";
@@ -70,10 +71,10 @@ else {
     echo "<li><a href=pose.php>Switch User</a></li>";
   }
   if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-	  echo "<li><a href=changepass.php>Change password</a></li>";
+      echo "<li><a href=changepass.php>Change password</a></li>";
   echo "<li><a href=loginform.php?logout=yes>Logout</a></li>";
   echo "</ul>";
 }  
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

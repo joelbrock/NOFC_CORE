@@ -22,47 +22,44 @@
 *********************************************************************************/
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	* 28Feb13 Andy Theuninck wrapped as class
-	* 19Jan13 Eric Lee Add productUser to table list
-	* 10Oct12 Eric Lee Add memberCards to table list
+    * 28Feb13 Andy Theuninck wrapped as class
+    * 19Jan13 Eric Lee Add productUser to table list
+    * 10Oct12 Eric Lee Add memberCards to table list
 */
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class SyncIndexPage extends FanniePage {
 
-	protected $title = "Fannie : Sync Lane";
-	protected $header = "Sync Lane Operational Tables";
+    protected $title = "Fannie : Sync Lane";
+    protected $header = "Sync Lane Operational Tables";
 
-	function body_content(){
-		ob_start();
-		?>
-		<form action="TableSyncPage.php" method="get">
+    function body_content(){
+        ob_start();
+        ?>
+        <form action="TableSyncPage.php" method="get">
 
-		<b>Table</b>: <select name="tablename">
-		<option value="">Select a table</option>
-		<option value="products">Products</option>
-		<option value="productUser">Extra Product Info</option>
-		<option value="custdata">Members</option>
-		<option value="memberCards">Membership Cards</option>
-		<option value="employees">Cashiers</option>
-		<option value="departments">Departments</option>
-		<option value="tenders">Tenders</option>
-		</select><br /><br />
+        <b>Table</b>: <select name="tablename">
+        <option value="">Select a table</option>
+        <option value="products">Products</option>
+        <option value="productUser">Extra Product Info</option>
+        <option value="custdata">Members</option>
+        <option value="memberCards">Membership Cards</option>
+        <option value="employees">Cashiers</option>
+        <option value="departments">Departments</option>
+        <option value="tenders">Tenders</option>
+        </select><br /><br />
 
-		<b>Other table</b>: <input type="text" name="othertable" /><br /><br />
+        <b>Other table</b>: <input type="text" name="othertable" /><br /><br />
 
-		<input type="submit" value="Send Data" />
-		</form>
-		<?php
-		return ob_get_clean();
-	}
+        <input type="submit" value="Send Data" />
+        </form>
+        <?php
+        return ob_get_clean();
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new SyncIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

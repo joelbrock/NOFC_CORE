@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class drawerPage extends NoInputPage {
@@ -98,28 +96,10 @@ class drawerPage extends NoInputPage {
 		return True;
 	}
 
-	function head_content(){
+	function head_content()
+    {
 		?>
-		<script type="text/javascript" >
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#selectlist :selected').val('');
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 	} // END head() FUNCTION
 
@@ -169,10 +149,11 @@ class drawerPage extends NoInputPage {
 		</div>
 		</div>
 		<?php
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 		$this->add_onload_command("\$('#selectlist').focus();");
-		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
 	} // END body_content() FUNCTION
 }
 
-new drawerPage();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new drawerPage();
 ?>

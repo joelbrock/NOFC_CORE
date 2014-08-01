@@ -21,45 +21,54 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class SaMenuPage
 */
 class SaMenuPage extends FannieRESTfulPage {
-	protected $window_dressing = False;
+    protected $window_dressing = False;
 
-	function css_content(){
-		ob_start();
-		?>
+    function css_content(){
+        ob_start();
+        ?>
 input[type="submit"] {
-	width:85%;
-	font-size: 2em;
+    width:85%;
+    font-size: 2em;
 }
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	function get_view(){
-		ob_start();
-		?>
+    function get_view(){
+        ob_start();
+        ?>
 <!doctype html>
 <html>
-<head><title>Handheld Menu</title></head>
+<head>
+    <title>Handheld Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 <body>
 <input type="submit" value="Inventory"
-	onclick="location='SaHandheldPage.php';return false;" />
+    onclick="location='SaHandheldPage.php';return false;" />
 <hr />
 <input type="submit" value="Price Check"
-	onclick="location='SaPriceChangePage.php';return false;" />
+    onclick="location='SaPriceChangePage.php';return false;" />
+<hr />
+<input type="submit" value="Ordering Info"
+    onclick="location='SaOrderingPage.php';return false;" />
+<hr />
+<input type="submit" value="Shelf Location"
+    onclick="location='../../../item/mapping/index.php';return false;" />
 </body>
 </html>
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

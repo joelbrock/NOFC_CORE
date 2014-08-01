@@ -24,75 +24,75 @@
 ini_set('display_errors','1');
 include('../../config.php'); 
 if(!class_exists('SQLManager'))
-	include($FANNIE_ROOT.'src/SQLManager.php');
+    include($FANNIE_ROOT.'src/SQLManager.php');
 include('../util.php');
 include('../db.php');
 include_once('../../classlib2.0/FannieAPI.php');
 
 /**
-	@class InstallSampleDataPage
-	Class for the SampleData install and config options
+    @class InstallSampleDataPage
+    Class for the SampleData install and config options
 */
 class InstallSampleDataPage extends InstallPage {
 
-	protected $title = 'Fannie: Sample Data';
-	protected $header = 'Fannie: Sample Data';
+    protected $title = 'Fannie: Sample Data';
+    protected $header = 'Fannie: Sample Data';
 
-	public $description = "
-	Class for the Sample Data install page.
-	";
+    public $description = "
+    Class for the Sample Data install page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../../src/style.css");
-		$this->add_css_file("../../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../../src/style.css");
+        $this->add_css_file("../../src/javascript/jquery-ui.css");
+        $this->add_css_file("../../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../../src/jquery/js/jquery.js");
-		$this->add_script("../../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../../src/javascript/jquery.js");
+        $this->add_script("../../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	*/
-	function css_content(){
-		$css ="
-		h4.install {
-		margin-bottom: 0.4em;
-		}";
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    function css_content(){
+        $css ="
+        h4.install {
+        margin-bottom: 0.4em;
+        }";
 
-		return $css;
+        return $css;
 
-	//css_content()
-	}
+    //css_content()
+    }
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
 
-	}
-	*/
+    }
+    */
 
-	function body_content(){
-		//Should this really be done with global?
-		//global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
-		include('../../config.php'); 
-		ob_start();
+    function body_content(){
+        //Should this really be done with global?
+        //global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
+        include('../../config.php'); 
+        ob_start();
 ?>
 <?php
 echo showInstallTabs("Sample Data", '../');
@@ -102,10 +102,10 @@ echo showInstallTabs("Sample Data", '../');
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <hr />
@@ -114,76 +114,88 @@ else {
 /* First, if this is a request to load a file, do that.
 */
 $db = new SQLManager($FANNIE_SERVER,
-	$FANNIE_SERVER_DBMS,
-	$FANNIE_OP_DB,
-	$FANNIE_SERVER_USER,
-	$FANNIE_SERVER_PW);
+    $FANNIE_SERVER_DBMS,
+    $FANNIE_OP_DB,
+    $FANNIE_SERVER_USER,
+    $FANNIE_SERVER_PW);
 
 if (isset($_REQUEST['employees'])){
-	echo "Loading employees";
-	$db->query("TRUNCATE TABLE employees");
-	loaddata($db,'employees');	
+    echo "Loading employees";
+    $db->query("TRUNCATE TABLE employees");
+    loaddata($db,'employees');  
 }
 elseif(isset($_REQUEST['custdata'])){
-	echo "Loading custdata";
-	$db->query("TRUNCATE TABLE custdata");
-	loaddata($db,'custdata');
+    echo "Loading custdata";
+    $db->query("TRUNCATE TABLE custdata");
+    loaddata($db,'custdata');
 }
 elseif(isset($_REQUEST['memtype'])){
-	echo "Loading memtype";
-	$db->query("TRUNCATE TABLE memtype");
-	loaddata($db,'memtype');
-	echo "Loading memdefaults";
-	$db->query("TRUNCATE TABLE memdefaults");
-	loaddata($db,'memdefaults');
+    echo "Loading memtype";
+    $db->query("TRUNCATE TABLE memtype");
+    loaddata($db,'memtype');
+    if ($db->tableExists('memdefaults')) {
+        echo "Loading memdefaults";
+        $db->query("TRUNCATE TABLE memdefaults");
+        loaddata($db,'memdefaults');
+    }
 }
 elseif(isset($_REQUEST['products'])){
-	echo "Loading products";
-	$db->query("TRUNCATE TABLE products");
-	loaddata($db,'products');
+    echo "Loading products";
+    $db->query("TRUNCATE TABLE products");
+    loaddata($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
-	echo "Loading departments";
-	$db->query("TRUNCATE TABLE departments");
-	loaddata($db,'departments');
-	/* subdepts sample data is of questionable use
-	echo "<br />Loading subdepts";
-	$db->query("TRUNCATE TABLE subdepts");
-	loaddata($db,'subdepts');
-	*/
+    echo "Loading departments";
+    $db->query("TRUNCATE TABLE departments");
+    loaddata($db,'departments');
+    /* subdepts sample data is of questionable use
+    echo "<br />Loading subdepts";
+    $db->query("TRUNCATE TABLE subdepts");
+    loaddata($db,'subdepts');
+    */
 }
 elseif(isset($_REQUEST['memtype'])){
-	echo "Loading memtype";
-	$db->query("TRUNCATE TABLE memtype");
-	loaddata($db,'memtype');
-	echo "Loading memdefaults";
-	$db->query("TRUNCATE TABLE memdefaults");
-	loaddata($db,'memdefaults');
+    echo "Loading memtype";
+    $db->query("TRUNCATE TABLE memtype");
+    loaddata($db,'memtype');
+    echo "Loading memdefaults";
+    $db->query("TRUNCATE TABLE memdefaults");
+    loaddata($db,'memdefaults');
 }
 elseif (isset($_REQUEST['superdepts'])){
-	echo "Loadintg super departments";
-	$db->query("TRUNCATE TABLE superdepts");
-	loaddata($db,'superdepts');
-	$db->query("TRUNCATE TABLE superDeptNames");
-	loaddata($db,'superDeptNames');
+    echo "Loadintg super departments";
+    $db->query("TRUNCATE TABLE superdepts");
+    loaddata($db,'superdepts');
+    $db->query("TRUNCATE TABLE superDeptNames");
+    loaddata($db,'superDeptNames');
 }
 elseif (isset($_REQUEST['tenders'])){
-	echo "Loadintg tenders";
-	$db->query("TRUNCATE TABLE tenders");
-	loaddata($db,'tenders');
+    echo "Loadintg tenders";
+    $db->query("TRUNCATE TABLE tenders");
+    loaddata($db,'tenders');
 }
 elseif (isset($_REQUEST['authentication'])){
-	echo "Loading authentication info";
-	$db->query("TRUNCATE TABLE userKnownPrivs");
-	loaddata($db,'userKnownPrivs');
+    echo "Loading authentication info";
+    $db->query("TRUNCATE TABLE userKnownPrivs");
+    loaddata($db,'userKnownPrivs');
 }
 elseif (isset($_REQUEST['origin'])){
-	echo "Loading country info";
-	$db->query("TRUNCATE TABLE originCountry");
-	loaddata($db,'originCountry');
-	echo "<br />Loading state/province info";
-	$db->query("TRUNCATE TABLE originStateProv");
-	loaddata($db,'originStateProv');
+    echo "Loading country info";
+    $db->query("TRUNCATE TABLE originCountry");
+    loaddata($db,'originCountry');
+    echo "<br />Loading state/province info";
+    $db->query("TRUNCATE TABLE originStateProv");
+    loaddata($db,'originStateProv');
+} else if (isset($_REQUEST['authGroups'])) {
+    echo "Loading authentication groups";
+    $db->query("TRUNCATE TABLE userGroups");
+    loaddata($db,'userGroups');
+    $db->query("TRUNCATE TABLE userGroupPrivs");
+    loaddata($db,'userGroupPrivs');
+    // give "Administrators" group all permissions
+    $db->query("INSERT userGroupPrivs SELECT 
+            1, auth_class, 'all', 'all'
+            FROM userKnownPrivs");
 }
 ?>
 </i></blockquote>
@@ -194,7 +206,7 @@ elseif (isset($_REQUEST['origin'])){
 <p class="ichunk">
 Some sample data is available to get a test lane
 up and running quickly and to try Fannie functions.
-<br />Keep in mind this data overwrites whatever is currently in the table.
+<h3>Keep in mind this data overwrites whatever is currently in the table.</h3>
 <br />These utilities populate the server tables.
 Then use the <a href="../../sync/SyncIndexPage.php"
 target="_sync"
@@ -242,7 +254,10 @@ Load all the default tenders into the tenders table.<br />
 <hr />
 <h4 class="install">Authentication</h4>
 Load information about currently defined authorization classes<br />
-<input type=submit name=authentication value="Load auth info" />
+<input type=submit name=authentication value="Load auth classes" />
+<br /><br />
+Load default groups<br />
+<input type=submit name=authGroups value="Load auth groups" />
 <hr />
 <h4 class="install">Countries, States, and Provinces</h4>
 Load default place-of-origin information<br />
@@ -253,16 +268,14 @@ Load default place-of-origin information<br />
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // InstallSampleDataPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallSampleDataPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

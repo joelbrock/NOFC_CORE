@@ -1,8 +1,8 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -10,8 +10,7 @@ if (isset($_GET['excel'])){
 	$_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
 
-include($FANNIE_ROOT.'cache/cache.php');
-$cached_output = get_cache("monthly");
+$cached_output = DataCache::getFile("monthly");
 if ($cached_output && !isset($_REQUEST['month'])){
 	echo $cached_output;
 	exit;
@@ -32,12 +31,14 @@ if (isset($_REQUEST['month']) && isset($_REQUEST['year'])){
 $start = date("Y-m-01",$stamp);
 $end = date("Y-m-t",$stamp);
 $lm_span = "'$start 00:00:00' AND '$end 23:59:59'";
+$lm_args = array($start.' 00:00:00', $end.' 23:59:59');
 
 $dlog_lm = "trans_archive.dlogBig";
 
 $stamp = mktime(0,0,0,date('m',$stamp)-2,1,date('Y',$stamp));
 $start = date("Y-m-01",$stamp);
 $lq_span = "'$start 00:00:00' AND '$end 23:59:59'";
+$lq_args = array($start.' 00:00:00', $end.' 23:59:59');
 
 $dlog_lq = "trans_archive.dlogBig";
 
@@ -88,23 +89,23 @@ foreach ($yearBuckets as $k=>$v){
 }
 echo "</table>";
 
-$patronageLMQ = "select d.card_no from $dlog_lm as d LEFT JOIN
+$patronageLMQ = $sql->prepare("select d.card_no from $dlog_lm as d LEFT JOIN
 		custdata as c on c.CardNo=d.card_no LEFT JOIN
 		suspensions as s on s.cardno=d.card_no
 		WHERE c.personNum=1 and (c.memType=1 or s.memtype1=1)
 		AND register_no <> 30
-		AND (tdate BETWEEN $lm_span)
-		GROUP BY d.card_no";
-$patronageLM = $sql->num_rows($sql->query($patronageLMQ));
+		AND (tdate BETWEEN ? AND ?)
+		GROUP BY d.card_no");
+$patronageLM = $sql->num_rows($sql->execute($patronageLMQ, $lm_args));
 
-$patronageLQQ = "select d.card_no from $dlog_lq as d LEFT JOIN
+$patronageLQQ = $sql->prepare("select d.card_no from $dlog_lq as d LEFT JOIN
 		custdata as c on c.CardNo=d.card_no LEFT JOIN
 		suspensions as s on s.cardno=d.card_no
 		WHERE c.personNum=1 and (c.memType=1 or s.memtype1=1)
 		and register_no <> 30
-		AND tdate BETWEEN $lq_span
-		GROUP BY d.card_no";
-$patronageLQ = $sql->num_rows($sql->query($patronageLQQ));
+		AND tdate BETWEEN ? AND ?
+		GROUP BY d.card_no");
+$patronageLQ = $sql->num_rows($sql->execute($patronageLQQ, $lq_args));
 
 $yearQ = "select y.card_no,month_no,-1*total,
 	".$sql->monthdiff($sql->now(),'m.start_date')." 
@@ -214,7 +215,7 @@ echo "</table>";
 $output = ob_get_contents();
 ob_end_clean();
 if (!isset($_RREQUEST['month']))
-	put_cache('monthly',$output);
+	DataCache::putFile('monthly',$output);
 echo $output;
 
 ?>

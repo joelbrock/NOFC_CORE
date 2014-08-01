@@ -22,11 +22,12 @@
 *********************************************************************************/
 
 require('../login.php');
+include("../../config.php");
 
 $current_user = checkLogin();
 
 if ($current_user)
-	logout();
+    logout();
 
 echo "<html><body bgcolor=cabb1e>";
 echo "You have logged out successfully";
