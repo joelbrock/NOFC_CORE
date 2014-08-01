@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Delete User';
 $header = 'Fannie : Auth : Delete User';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -60,7 +59,7 @@ else {
   echo "<form action=deleteUser.php method=post>";
 echo "Username:<select name=name>";
 foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<input type=hidden name=warn value=warn>";
@@ -68,5 +67,5 @@ echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<p /><a href=menu.php>Main menu</a>";
 }
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

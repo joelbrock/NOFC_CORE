@@ -34,8 +34,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist_cards extends NoInputPage {
@@ -91,7 +89,7 @@ class memlist_cards extends NoInputPage {
 		}
 		else {
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$entered."' order by personNum";
 		}
@@ -224,35 +222,14 @@ class memlist_cards extends NoInputPage {
 	function head_content(){
 		global $CORE_LOCAL;
 		if ($this->temp_num_rows > 0){
-			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
 		} else {
 			$this->default_parsewrapper_js('reginput','selectform');
 			$this->add_onload_command("\$('#reginput').focus();\n");
 		}
 		?>
-		<script type="text/javascript">
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#search option:selected').each(function(){
-						$(this).val('');
-					});
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 	} // END head() FUNCTION
 
@@ -342,6 +319,7 @@ class memlist_cards extends NoInputPage {
 // /class memlist
 }
 
-new memlist_cards();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist_cards();
 
 ?>

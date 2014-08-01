@@ -39,19 +39,38 @@
 */
 class PriceMethod {
 
-	var $savedRow;
-	var $savedInfo;
+    public static $MAP = array(
+        0   => 'BasicPM',
+        1   => 'GroupPM',
+        2   => 'QttyEnforcedGroupPM',
+        3   => 'SplitABGroupPM',
+        4   => 'ABGroupPM',
+        5   => 'BigGroupPM',
+        6   => 'MoreThanQttyPM',
+    );
 
-	/**
-	  Add the item to the transaction
-	  @param $row A product table record
-	  @param $quantity Scan quantity
-	  @param $priceObj A DiscountType object 
-	*/
-	function addItem($row,$quantity,$priceObj){
-		return true;
-	}
+    var $savedRow;
+    var $savedInfo;
 
+    /**
+      Add the item to the transaction
+      @param $row A product table record
+      @param $quantity Scan quantity
+      @param $priceObj A DiscountType object 
+      @return boolean success/failure
+    */
+    function addItem($row,$quantity,$priceObj){
+        return true;
+    }
+
+    /**
+      Information about error(s) adding the
+      item to the transaction
+      @return string message
+    */
+    function errorInfo(){
+        return '';
+    }
 }
 
 ?>

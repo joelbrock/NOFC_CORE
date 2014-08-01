@@ -1,16 +1,15 @@
 <?php
 include('../../../config.php');
 
-include($FANNIE_ROOT.'legacy/queries/funct1Mem.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
 if (isset($_GET['delete'])){
 	$batchID = $_GET['batchID'];
-	$delQ1 = "delete from batchTest where batchID=$batchID";
-	$delQ2 = "delete from batchListTest where batchID=$batchID";
-	$delR1 = $sql->query($delQ1);
-	$delR2 = $sql->query($delQ2);
+	$delQ1 = $sql->prepare("delete from batchTest where batchID=?");
+	$delQ2 = $sql->prepare("delete from batchListTest where batchID=?");
+	$delR1 = $sql->execute($delQ1, array($batchID));
+	$delR2 = $sql->execute($delQ2, array($batchID));
 }
 
 $batchListQ= "SELECT b.batchID,b.batchName,b.startDate,b.endDate
@@ -22,16 +21,14 @@ $batchListR = $sql->query($batchListQ);
 ?>
 <html>
 <head>
-<link href="CalendarControl/CalendarControl.css"
+<link href="../../../src/javascript/jquery-ui.css"
       rel="stylesheet" type="text/css">
-<script src="CalendarControl/CalendarControl.js"
+<script src="../../../src/javascript/jquery.js"
+        language="javascript"></script>
+<script src="../../../src/javascript/jquery-ui.js"
         language="javascript"></script>
 </head>
 <body>
-<link href="CalendarControl/CalendarControl.css"
-      rel="stylesheet" type="text/css">
-<script src="CalendarControl/CalendarControl.js"
-        language="javascript"></script>
 
 <?
 echo "<table border=1 cellpadding=2 cellspacing=0>";

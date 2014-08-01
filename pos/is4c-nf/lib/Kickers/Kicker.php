@@ -26,48 +26,69 @@
   Base class for opening cash drawer
 
 */
-class Kicker {
+class Kicker 
+{
 
-	/**
-	  Determine whether to open the drawer
-	  @return boolean
-	*/
-	function doKick(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		$db = Database::tDataConnect();
+    /**
+      Determine whether to open the drawer
+      @param $trans_num [string] transaction identifier
+      @return boolean
+    */
+    public function doKick($trans_num)
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+        $db = Database::tDataConnect();
 
-		$query = "select trans_id from localtemptrans where 
-			(trans_subtype = 'CA' and total <> 0)";
+        $query = "SELECT trans_id   
+                  FROM localtranstoday 
+                  WHERE 
+                    (trans_subtype = 'CA' and total <> 0)
+                    AND " . $this->refToWhere($trans_num);
 
-		$result = $db->query($query);
-		$num_rows = $db->num_rows($result);
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
 
-		return ($num_rows > 0) ? True : False;
+        return ($num_rows > 0) ? true : false;
+    }
 
-	}
+    protected function refToWhere($ref)
+    {
+        list($e, $r, $t) = explode('-', $ref, 3);
+        return sprintf(' emp_no=%d AND register_no=%d AND trans_no=%d ',
+                        $e, $r, $t);
+    }
 
-	/**
-	  Determine whether to open the drawer when
-	  a cashier signs in
-	  @return boolean
-	*/
-	function kickOnSignIn(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		return True;
-	}
+    /**
+      Determine whether to open the drawer when
+      a cashier signs in
+      @return boolean
+    */
+    public function kickOnSignIn()
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
 
-	/**
-	  Determine whether to open the drawer when
-	  a cashier signs out
-	  @return boolean
-	*/
-	function kickOnSignOut(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		return True;
-	}
+        return true;
+    }
+
+    /**
+      Determine whether to open the drawer when
+      a cashier signs out
+      @return boolean
+    */
+    public function kickOnSignOut()
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+
+        return true;
+    }
 }
 
-?>

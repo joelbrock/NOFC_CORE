@@ -34,7 +34,7 @@ class PriceOverride extends NoInputPage {
 		$db = Database::tDataConnect();
 		
 		$q = "SELECT description,total,department FROM localtemptrans
-			WHERE trans_type IN ('I','D') AND trans_status = ''
+			WHERE trans_type IN ('I','D') AND trans_status IN ('', ' ', '0')
 			AND trans_id=".((int)$line_id);
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
@@ -51,14 +51,15 @@ class PriceOverride extends NoInputPage {
 
 			if ($input == "CL"){
 				if ($this->price == "$0.00"){
-					$q = sprintf("DELETE FROM localtemptrans WHERE trans_id=".(int)$line_id);
+					$q = sprintf("UPDATE localtemptrans SET trans_type='L',
+                                trans_subtype='OG',charflag='PO',total=0
+                                WHERE trans_id=".(int)$line_id);
 					$r = $db->query($q);
 				}
 				// override canceled; go home
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
-			}
-			else if (is_numeric($input) && $input != 0){
+			} else if (is_numeric($input) && $input != 0){
 				$cents = 0;
 				$dollars = 0;
 				if (strlen($input)==1 || strlen($input)==2)
@@ -72,8 +73,9 @@ class PriceOverride extends NoInputPage {
 				if ($w['department'] == $CORE_LOCAL->get("BottleReturnDept"))
 					$ttl = $ttl * -1;
 					
-				$q = sprintf("UPDATE localtemptrans SET total=%.2f, charflag='PO'
-					WHERE trans_id=%d",$ttl,$line_id);
+				$q = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
+                    total = quantity*%.2f, charflag='PO'
+					WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
 				$r = $db->query($q);	
 
 				$this->change_page($this->page_url."gui-modules/pos2.php");
@@ -105,5 +107,6 @@ class PriceOverride extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new PriceOverride();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new PriceOverride();
 ?>

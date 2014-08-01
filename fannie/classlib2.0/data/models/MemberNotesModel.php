@@ -24,72 +24,122 @@
 /**
   @class MemberNotesModel
 */
-class MemberNotesModel extends BasicModel {
+class MemberNotesModel extends BasicModel 
+{
 
-	protected $name = "memberNotes";
+    protected $name = "memberNotes";
 
-	protected $preferred_db = 'op';
+    protected $preferred_db = 'op';
 
-	protected $columns = array(
-	'cardno' => array('type'=>'INT'),
-	'note' => array('type','TEXT'),
-	'stamp' => array('type','DATETIME'),
-	'username' => array('type','VARCHAR(50)')
-	);
+    protected $columns = array(
+    'memberNoteID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'cardno' => array('type'=>'INT', 'index'=>true),
+    'note' => array('type'=>'TEXT'),
+    'stamp' => array('type'=>'DATETIME'),
+    'username' => array('type'=>'VARCHAR(50)')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function cardno(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["cardno"]))
-				return $this->instance["cardno"];
-			elseif(isset($this->columns["cardno"]["default"]))
-				return $this->columns["cardno"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["cardno"] = func_get_arg(0);
-		}
-	}
+    public function memberNoteID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memberNoteID"])) {
+                return $this->instance["memberNoteID"];
+            } else if (isset($this->columns["memberNoteID"]["default"])) {
+                return $this->columns["memberNoteID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["memberNoteID"]) || $this->instance["memberNoteID"] != func_get_args(0)) {
+                if (!isset($this->columns["memberNoteID"]["ignore_updates"]) || $this->columns["memberNoteID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["memberNoteID"] = func_get_arg(0);
+        }
+    }
 
-	public function note(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["note"]))
-				return $this->instance["note"];
-			elseif(isset($this->columns["note"]["default"]))
-				return $this->columns["note"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["note"] = func_get_arg(0);
-		}
-	}
+    public function cardno()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cardno"])) {
+                return $this->instance["cardno"];
+            } else if (isset($this->columns["cardno"]["default"])) {
+                return $this->columns["cardno"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["cardno"]) || $this->instance["cardno"] != func_get_args(0)) {
+                if (!isset($this->columns["cardno"]["ignore_updates"]) || $this->columns["cardno"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["cardno"] = func_get_arg(0);
+        }
+    }
 
-	public function stamp(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["stamp"]))
-				return $this->instance["stamp"];
-			elseif(isset($this->columns["stamp"]["default"]))
-				return $this->columns["stamp"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["stamp"] = func_get_arg(0);
-		}
-	}
+    public function note()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["note"])) {
+                return $this->instance["note"];
+            } else if (isset($this->columns["note"]["default"])) {
+                return $this->columns["note"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["note"]) || $this->instance["note"] != func_get_args(0)) {
+                if (!isset($this->columns["note"]["ignore_updates"]) || $this->columns["note"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["note"] = func_get_arg(0);
+        }
+    }
 
-	public function username(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["username"]))
-				return $this->instance["username"];
-			elseif(isset($this->columns["username"]["default"]))
-				return $this->columns["username"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["username"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function stamp()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["stamp"])) {
+                return $this->instance["stamp"];
+            } else if (isset($this->columns["stamp"]["default"])) {
+                return $this->columns["stamp"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["stamp"]) || $this->instance["stamp"] != func_get_args(0)) {
+                if (!isset($this->columns["stamp"]["ignore_updates"]) || $this->columns["stamp"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["stamp"] = func_get_arg(0);
+        }
+    }
+
+    public function username()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["username"])) {
+                return $this->instance["username"];
+            } else if (isset($this->columns["username"]["default"])) {
+                return $this->columns["username"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["username"]) || $this->instance["username"] != func_get_args(0)) {
+                if (!isset($this->columns["username"]["ignore_updates"]) || $this->columns["username"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["username"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+

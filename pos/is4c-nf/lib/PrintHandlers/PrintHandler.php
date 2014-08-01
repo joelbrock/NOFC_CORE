@@ -638,20 +638,7 @@ class PrintHandler {
 	  @param the output string
 	*/
 	function writeLine($text){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("print") != 0) {
-
-			/* check fails on LTP1: in PHP4
-			   suppress open errors and check result
-			   instead 
-			*/
-			//if (is_writable($CORE_LOCAL->get("printerPort"))){}
-			$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
-			if ($fp){
-				fwrite($fp, $text);
-				fclose($fp);
-			}
-		}
+        ReceiptLib::writeLine($text);
 	}
 
 	/**
@@ -679,16 +666,16 @@ class PrintHandler {
 		}
 		else if (file_exists($arg)){
 			$bmp = new Bitmap();
-			$bmp->Load($arg);
+			$bmp->load($arg);
 		}
 
 		// argument was invalid
 		if ($bmp === null)
 			return "";
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$stripes = $this->TransposeBitmapData($bmpData, $bmpWidth);

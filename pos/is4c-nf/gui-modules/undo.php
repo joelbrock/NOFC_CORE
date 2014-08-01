@@ -99,7 +99,7 @@ class undo extends NoInputPage {
 					matched, card_no, trans_id
 					from localtranstoday where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}
@@ -113,14 +113,14 @@ class undo extends NoInputPage {
 				// look up transaction remotely
 				$db = Database::mDataConnect();
 				$query = "select upc, description, trans_type, trans_subtype,
-					trans_status, department, quantity, Scale, unitPrice,
+					trans_status, department, quantity, scale, unitPrice,
 					total, regPrice, tax, foodstamp, discount, memDiscount,
 					discountable, discounttype, voided, PercentDiscount,
 					ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
 					matched, card_no, trans_id
 					from dtransactions where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}
@@ -175,11 +175,6 @@ class undo extends NoInputPage {
 					$temp = explode(" ",$row["description"]);
 					TransRecord::addTare($temp[3]*100);
 				}
-				elseif ($row["upc"] == "MAD Coupon"){
-					$madCoup = $row['total'];
-					TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
-						-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
-				}
 				elseif ($row["upc"] == "DISCOUNT"){
 					//TransRecord::addTransDiscount();
 				}
@@ -191,19 +186,13 @@ class undo extends NoInputPage {
 					$row["memDiscount"] *= -1;
 					$row["quantity"] *= -1;
 					$row["ItemQtty"] *= -1;
-					TransRecord::addItem($row["upc"],$row["description"],$row["trans_type"],$row["trans_subtype"],
-						$row["trans_status"],$row["department"],$row["quantity"],
-						$row["unitPrice"],$row["total"],$row["regPrice"],
-						$row["Scale"],$row["tax"],$row["foodstamp"],$row["discount"],
-						$row["memDiscount"],$row["discountable"],$row["discounttype"],
-						$row["ItemQtty"],$row["volDiscType"],$row["volume"],$row["VolSpecial"],
-						$row["mixMatch"],$row["matched"],$row["voided"]);
+					TransRecord::addRecord($row);
 				}
 			}
 
 			$op = Database::pDataConnect();
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$card_no."'";
 			$res = $op->query($query);
@@ -211,9 +200,7 @@ class undo extends NoInputPage {
 			PrehLib::setMember($card_no,1,$row);
 			$CORE_LOCAL->set("autoReprint",0);
 
-			/* restore the logged in cashier */
-			$CORE_LOCAL->set("CashierNo",$prevCashier);
-			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
+			/* do NOT restore logged in cashier until this transaction is complete */
 			
 			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
@@ -222,4 +209,5 @@ class undo extends NoInputPage {
 	}
 }
 
-new undo();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new undo();

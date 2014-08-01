@@ -22,99 +22,111 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class ItemMarginModule extends ItemModule {
-	
-	function ShowEditForm($upc){
-		$db = $this->db();
-		$p = $db->prepare_statement('SELECT normal_price,cost,department FROM products WHERE upc=?');
-		$r = $db->exec_statement($p,array($upc));
-		$vals = array(0,0,0);
-		if ($db->num_rows($r) > 0)
-			$vals = $db->fetch_row($r);
-		$ret = '<fieldset id="ItemMarginFieldset">';
-		$ret .= '<legend>Margin</legend>';
-		$ret .= '<div id="ItemMarginContents">';
-		$ret .= $this->CalculateMargin($vals[0],$vals[1],$vals[2]);
-		$ret .= '</div>';
-		$ret .= '</fieldset>';
-		$ret .= $this->js();
-		return $ret;
-	}
+    
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
+        $db = $this->db();
+        $p = $db->prepare_statement('SELECT normal_price,cost,department FROM products WHERE upc=?');
+        $r = $db->exec_statement($p,array($upc));
+        $vals = array(0,0,0);
+        if ($db->num_rows($r) > 0)
+            $vals = $db->fetch_row($r);
+        $ret = '<fieldset id="ItemMarginFieldset">';
+        $ret .=  "<legend onclick=\"\$('#ItemMarginContents').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Margin</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ItemMarginContents" style="' . $css . '">';
+        $ret .= $this->calculateMargin($vals[0],$vals[1],$vals[2]);
+        $ret .= '</div>';
+        $ret .= '</fieldset>';
 
-	private function getSRP($cost,$margin){
-		$srp = sprintf("%.2f",$cost/(1-$margin));
-		while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" &&
-		       substr($srp,strlen($srp)-1,strlen($srp)) != "9")
-			$srp += 0.01;
-		return $srp;
-	}
+        return $ret;
+    }
 
-	private function CalculateMargin($price,$cost,$dept){
-		$dbc = $this->db();
+    private function getSRP($cost,$margin){
+        $srp = sprintf("%.2f",$cost/(1-$margin));
+        while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" &&
+               substr($srp,strlen($srp)-1,strlen($srp)) != "9")
+            $srp += 0.01;
+        return $srp;
+    }
 
-		$dmP = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
-		$dmR = $dbc->exec_statement($dmP,array($dept));
-		$dm = "Unknown";
-		if ($dbc->num_rows($dmR) > 0){
-			$dm = sprintf('%.2f',array_pop($dbc->fetch_row($dmR))*100);
-		}
+    private function calculateMargin($price,$cost,$deptID)
+    {
+        $dbc = $this->db();
 
-		$ret = "Desired margin on this department is ".$dm."%";
-		$ret .= "<br />";
-		
-		$actual = 0;
-		if ($price != 0)
-			$actual = (($price-$cost)/$price)*100;
-		if ($actual > $dm && is_numeric($dm)){
-			$ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%<br />",
-				$actual);
-		}
-		elseif (!is_numeric($price)){
-			$ret .= "<span style=\"color:green;\">No price has been saved for this item<br />";
-		}
-		else {
-			$ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
-				$actual);
-			$srp = $this->getSRP($cost,$dm/100.0);
-			$ret .= sprintf("Suggested price: \$%.2f ",$srp);
-			$ret .= sprintf("(<a href=\"\" onclick=\"\$('#price').val(%.2f); updateMarginMod(); return false;\">Use this price</a>)",$srp);
-		}
+        $dm = 'Unknown';
+        $dept = new DepartmentsModel($dbc);
+        $dept->dept_no($deptID);
+        if ($dept->load()) {
+            $dm = $dept->margin() * 100;
+        }
 
-		return $ret;
-	}
+        if ((empty($dm) || $dm == 'Unknown') && $dbc->tableExists('deptMargin')) {
+            $dmP = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
+            $dmR = $dbc->exec_statement($dmP,array($deptID));
+            if ($dbc->num_rows($dmR) > 0){
+                $row = $dbc->fetch_row($dmR);
+                $dm = sprintf('%.2f',$row['margin']*100);
+            }
+        }
 
-	private function js(){
-		global $FANNIE_URL;
-		ob_start();
-		?>
-		<script type="text/javascript">
-		function updateMarginMod(){
-			$.ajax({
-				url: '<?php echo $FANNIE_URL; ?>item/modules/ItemMarginModule.php',
-				data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val(),
-				cache: false,
-				success: function(data){
-					$('#ItemMarginContents').html(data);
-				}
-			});
-		}
-		$('#price').change(updateMarginMod);
-		$('#cost').change(updateMarginMod);
-		</script>
-		<?php
-		return ob_get_clean();
-	}
+        $ret = "Desired margin on this department is ".$dm."%";
+        $ret .= "<br />";
+        
+        $actual = 0;
+        if ($price != 0)
+            $actual = (($price-$cost)/$price)*100;
+        if ($actual > $dm && is_numeric($dm)){
+            $ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%</span><br />",
+                $actual);
+        }
+        elseif (!is_numeric($price)){
+            $ret .= "<span style=\"color:green;\">No price has been saved for this item</span><br />";
+        }
+        else {
+            $ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
+                $actual);
+            $srp = $this->getSRP($cost,$dm/100.0);
+            $ret .= sprintf("Suggested price: \$%.2f ",$srp);
+            $ret .= sprintf("(<a href=\"\" onclick=\"\$('#price').val(%.2f); updateMarginMod(); return false;\">Use this price</a>)",$srp);
+        }
 
-	function AjaxCallback(){
-		$p = FormLib::get_form_value('p',0);
-		$d = FormLib::get_form_value('d',0);
-		$c = FormLib::get_form_value('c',0);
-		echo $this->CalculateMargin($p,$c,$d);
-	}
+        return $ret;
+    }
+
+    public function getFormJavascript($upc)
+    {
+        global $FANNIE_URL;
+        ob_start();
+        ?>
+        function updateMarginMod(){
+            $.ajax({
+                url: '<?php echo $FANNIE_URL; ?>item/modules/ItemMarginModule.php',
+                data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val(),
+                cache: false,
+                success: function(data){
+                    $('#ItemMarginContents').html(data);
+                }
+            });
+        }
+        $('#price').change(updateMarginMod);
+        $('#cost').change(updateMarginMod);
+        <?php
+        return ob_get_clean();
+    }
+
+    function AjaxCallback(){
+        $p = FormLib::get_form_value('p',0);
+        $d = FormLib::get_form_value('d',0);
+        $c = FormLib::get_form_value('c',0);
+        echo $this->CalculateMargin($p,$c,$d);
+    }
 }
 
 /**
@@ -124,6 +136,6 @@ class ItemMarginModule extends ItemModule {
   another PHP script.
 */
 if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
-	$obj = new ItemMarginModule();
-	$obj->AjaxCallback();	
+    $obj = new ItemMarginModule();
+    $obj->AjaxCallback();   
 }

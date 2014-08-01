@@ -42,10 +42,13 @@ class CashDropParser extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if (substr($str,0,8) == 'DROPDROP'){
-			// go to warning page. save input.
-			$CORE_LOCAL->set('cashDropSaveInput',substr($str,8));
-			$plugin_info = new CashDrop();
-			$ret['main_frame'] = $plugin_info->plugin_url().'/CashDropWarningPage.php';
+            // repeat cashier's input, if any
+            if (strlen($str) > 8) {
+                $json['retry'] = substr($str, 8);
+            }
+            // redraw right side of the screen
+            $json['scale'] = true; 
+
 			return $ret;
 		}
 		else {
@@ -55,9 +58,13 @@ class CashDropParser extends Parser {
 				$amt = substr($str,4);
 			else
 				$amt = substr($str,0,strlen($str)-4);
-			TransRecord::addItem('CASHDROP', 'CASHDROP', "L", 'CA', '', 
-				0, 0, 0, ($amt/100.00), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, '');
+			TransRecord::addRecord(array(
+                'upc' =>'CASHDROP', 
+                'description' => 'CASHDROP', 
+                'trans_type' => "L", 
+                'trans_subtype' => 'CA',
+				'total' => ($amt/100.00),
+            ));
 			$ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
 			return $ret;
 		}

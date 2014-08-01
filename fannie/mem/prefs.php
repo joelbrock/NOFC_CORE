@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $header = "Customer Preferences";
 $page_title = "Fannie :: Customer Preferences";
@@ -31,53 +32,57 @@ $cardno = isset($_REQUEST['memID']) ? $_REQUEST['memID'] : 0;
 include($FANNIE_ROOT.'src/header.html');
 
 if ($cardno == 0){
-	echo '<i>Error - no member specified</i>';
+    echo '<i>Error - no member specified</i>';
 }
 else {
 
-	if (isset($_REQUEST['savebtn'])){
-		$pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
-		$pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
-		if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
-			$delP = $dbc->prepare_statement("DELETE FROM custPreferences
-				WHERE card_no=? AND pref_key=?");
-			$insP = $dbc->prepare_statement("INSERT INTO custPreferences
-				(card_no, pref_key, pref_value) VALUES (?,?,?)");
-			for($i=0;$i<count($pk);$i++){
-				$dbc->exec_statement($delP,array($cardno,$pk[$i]));
-				$dbc->exec_statement($insP,array($cardno,$pk[$i],$pv[$i]));
-			}
-			echo '<div align="center"><i>Settings Saved</i></div>';
-		}
-	}
+    if (isset($_REQUEST['savebtn'])){
+        $pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
+        $pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
+        if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
+            $availModel = new CustAvailablePrefsModel($dbc);
+            $prefModel = new CustPreferencesModel($dbc);
+            for($i=0;$i<count($pk);$i++) {
+                $availModel->pref_key($pk[$i]);
+                $availModel->load();
 
-	printf('<h3>Account #%d</h3>',$cardno);
-	echo '<form action="prefs.php" method="post">';
-	printf('<input type="hidden" value="%d" name="memID" />',$cardno);
+                $prefModel->pref_key($pk[$i]);
+                $prefModel->card_no($cardno);
+                $prefModel->custAvailablePrefID($availModel->custAvailablePrefID());
+                $prefModel->pref_value($pv[$i]);
+                $prefModel->save();
+            }
+            echo '<div align="center"><i>Settings Saved</i></div>';
+        }
+    }
 
-	$prefQ = $dbc->prepare_statement("SELECT a.pref_key,
-		CASE WHEN c.pref_value IS NULL THEN a.pref_default_value ELSE c.pref_value END
-		AS current_value,
-		a.pref_description
-		FROM custAvailablePrefs AS a
-		LEFT JOIN custPreferences AS c
-		ON a.pref_key=c.pref_key AND c.card_no=?
-		ORDER BY a.pref_key");
-	$prefR = $dbc->exec_statement($prefQ,array($cardno));
-	echo '<table cellpadding="4" cellspacing="0" border="1">';
-	echo '<tr><th>Setting</th><th>Value</th></tr>';	
-	while($prefW = $dbc->fetch_row($prefR)){
-		printf('<tr><td>%s</td>
-			<td><input type="text" name="pref_v[]" value="%s" /></td>
-			</tr><input type="hidden" name="pref_k[]" value="%s" />',
-			$prefW['pref_description'],
-			$prefW['current_value'],
-			$prefW['pref_key']
-		);
-	}
-	echo '</table><br />';
-	echo '<input type="submit" value="Save" name="savebtn" />';
-	echo '</form>';
+    printf('<h3>Account #%d</h3>',$cardno);
+    echo '<form action="prefs.php" method="post">';
+    printf('<input type="hidden" value="%d" name="memID" />',$cardno);
+
+    $prefQ = $dbc->prepare_statement("SELECT a.pref_key,
+        CASE WHEN c.pref_value IS NULL THEN a.pref_default_value ELSE c.pref_value END
+        AS current_value,
+        a.pref_description
+        FROM custAvailablePrefs AS a
+        LEFT JOIN custPreferences AS c
+        ON a.pref_key=c.pref_key AND c.card_no=?
+        ORDER BY a.pref_key");
+    $prefR = $dbc->exec_statement($prefQ,array($cardno));
+    echo '<table cellpadding="4" cellspacing="0" border="1">';
+    echo '<tr><th>Setting</th><th>Value</th></tr>'; 
+    while($prefW = $dbc->fetch_row($prefR)){
+        printf('<tr><td>%s</td>
+            <td><input type="text" name="pref_v[]" value="%s" /></td>
+            </tr><input type="hidden" name="pref_k[]" value="%s" />',
+            $prefW['pref_description'],
+            $prefW['current_value'],
+            $prefW['pref_key']
+        );
+    }
+    echo '</table><br />';
+    echo '<input type="submit" value="Save" name="savebtn" />';
+    echo '</form>';
 }
 
 include($FANNIE_ROOT.'src/footer.html');

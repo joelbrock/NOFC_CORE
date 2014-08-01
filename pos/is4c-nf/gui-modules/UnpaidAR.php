@@ -58,6 +58,11 @@ class UnpaidAR extends BasicPage {
 		}
 		return True;
 	}
+
+    function head_content()
+    {
+        $this->noscan_parsewrapper_js();
+    }
 	
 	function body_content(){
 		global $CORE_LOCAL;
@@ -88,6 +93,7 @@ class UnpaidAR extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new UnpaidAR();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new UnpaidAR();
 
 ?>

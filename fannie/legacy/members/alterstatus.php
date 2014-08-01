@@ -1,6 +1,9 @@
 <?php
 include('../../config.php');
 
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
@@ -31,7 +34,16 @@ $memNum = $memID;
     <!-- <td colspan="9" valign="middle"><font size="+3" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">PI Killer</font></td>
   --> </tr>
   <tr>
-    <td colspan="11" bgcolor="#006633"><a href="memGen.php?memID=<?php echo $memNum;?>"><img src="../images/general.gif" width="72" height="16" border="0" /></a><a href="memEquit.php?memID=<?php echo $memNum;?>"><img src="../images/equity.gif" width="72" height="16" border="0" /></a><a href="memAR.php?memID=<?php echo $memNum;?>"><img src="../images/AR.gif" width="72" height="16" border="0" /></a><a href="memControl.php?memID=<?php echo $memNum;?>"><img src="../images/control.gif" width="72" height="16" border="0" /></a><a href="memDetail.php?memID=<?php echo $memNum;?>"><img src="../images/detail.gif" width="72" height="16" border="0" /></a></td>
+    <td colspan="11" bgcolor="#006633"><a href="memGen.php?memID=<?php echo $memNum;?>">
+    <img src="../images/general.gif" width="72" height="16" border="0" /></a>
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
+    <img src="../images/equity.gif" width="72" height="16" border="0" /></a>
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
+    <img src="../images/AR.gif" width="72" height="16" border="0" /></a>
+    <a href="memControl.php?memID=<?php echo $memNum;?>">
+    <img src="../images/control.gif" width="72" height="16" border="0" /></a>
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
+    <img src="../images/detail.gif" width="72" height="16" border="0" /></a></td>
   </tr>
   <tr>
     <td colspan="9"><a href="mainMenu.php" target="_top" onclick="MM_nbGroup('down','group1','Members','../images/memDown.gif',1)" onmouseover="MM_nbGroup('over','Members','../images/memOver.gif','../images/memUp.gif',1)" onmouseout="MM_nbGroup('out')"><img src="../images/memDown.gif" alt="" name="Members" border="0" id="Members" onload="MM_nbGroup('init','group1','Members','../images/memUp.gif',1)" /></a><a href="javascript:;" target="_top" onclick="MM_nbGroup('down','group1','Reports','../images/repDown.gif',1)" onmouseover="MM_nbGroup('over','Reports','../images/repOver.gif','../images/repUp.gif',1)" onmouseout="MM_nbGroup('out')"><img src="../images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" onload="" /></a><a href="javascript:;" target="_top" onClick="MM_nbGroup('down','group1','Items','../images/itemsDown.gif',1)" onMouseOver="MM_nbGroup('over','Items','../images/itemsOver.gif','../images/itemsUp.gif',1)" onMouseOut="MM_nbGroup('out')"><img name="Items" src="../images/itemsUp.gif" border="0" alt="Items" onLoad="" /></a><a href="javascript:;" target="_top" onClick="MM_nbGroup('down','group1','Reference','../images/refDown.gif',1)" onMouseOver="MM_nbGroup('over','Reference','../images/refOver.gif','../images/refUp.gif',1)" onMouseOut="MM_nbGroup('out')"><img name="Reference" src="../images/refUp.gif" border="0" alt="Reference" onLoad="" /></a></td>
@@ -46,8 +58,15 @@ if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
 	echo "&nbsp;&nbsp;&nbsp;Reason for suspending membership $memNum<br />";
 	echo "<form action=alterstatus.php method=post>";
 	echo "<input type=hidden name=memNum value=$memID>";
-	$curReasonCode = array_pop($sql->fetch_row($sql->query("SELECT reasonCode from suspensions WHERE cardno=$memNum")));
-	$curType = array_pop($sql->fetch_row($sql->query("SELECT type FROM custdata WHERE cardno=$memNum AND personnum=1")));
+    $sus = new SuspensionsModel($sql);
+    $sus->cardno($memNum);
+    $sus->load();
+    $curReasonCode = $sus->reasonCode();
+    $cust = new CustdataModel($sql);
+    $cust->CardNo($memNum);
+    $cust->personNum(1);
+    $cust->load();
+    $curType = $cust->Type();
 	$stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
 	echo "<select name=status>";
 	foreach ($stats as $k=>$v){
@@ -59,10 +78,12 @@ if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
 	$query = "select textStr,mask from reasoncodes";
 	$result = $sql->query($query);
 	echo "<table>";
+    $i=1;
 	while($row = $sql->fetch_row($result)){
-	  echo "<tr><td><input type=checkbox name=reasoncodes[] value=$row[1]";
+	  echo "<tr><td><input id=\"checkbox$i\" type=checkbox name=reasoncodes[] value=$row[1]";
 	  if ($curReasonCode & ((int)$row[1])) echo " checked";
-	  echo " /></td><td>$row[0]</td></tr>";
+	  echo " /></td><td><label for=\"checkbox$i\">$row[0]</label></td></tr>";
+      $i++;
 	}
 	echo "</table>";
 	echo "<input type=submit name=submit value=Update />";

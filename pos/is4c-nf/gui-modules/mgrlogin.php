@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputPage {
@@ -41,6 +39,9 @@ class mgrlogin extends NoInputPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var passwd = $('#reginput').val();
+			if (passwd == ''){
+				passwd = $('#userPassword').val();
+			}
 			$.ajax({
 				url: '<?php echo $_SERVER['PHP_SELF']; ?>',
 				data: 'input='+passwd,
@@ -54,7 +55,7 @@ class mgrlogin extends NoInputPage {
 						$.ajax({
 							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
-							data: 'receiptType=cancelled',
+							data: 'receiptType=cancelled&ref='+data.trans_num,
 							cache: false,
 							success: function(data2){
 								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
@@ -69,8 +70,8 @@ class mgrlogin extends NoInputPage {
 						$('div#cancelLoginBox').addClass('errorColoredArea');
 						$('span.larger').html(data.heading);
 						$('span#localmsg').html(data.msg);
-						$('#reginput').val('');
-						$('#reginput').focus();
+						$('#userPassword').val('');
+						$('#userPassword').focus();
 					}
 				}
 			});
@@ -84,7 +85,7 @@ class mgrlogin extends NoInputPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#reginput').focus();\n");
+		$this->add_onload_command("\$('#userPassword').focus();\n");
 		?>
 		<div class="baseHeight">
 		<div id="cancelLoginBox" class="coloredArea centeredDisplay">
@@ -93,8 +94,9 @@ class mgrlogin extends NoInputPage {
 		</span><br />
 		<form name="form" id="formlocal" method="post" 
 			autocomplete="off" onsubmit="return submitWrapper();">
-		<input type="password" name="reginput" tabindex="0" 
-			onblur="$('#reginput').focus();" id="reginput" />
+		<input type="password" name="userPassword" tabindex="0" 
+			onblur="$('#userPassword').focus();" id="userPassword" />
+		<input type="hidden" name="reginput" id="reginput" value="" />
 		</form>
 		<p>
 		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
@@ -121,24 +123,32 @@ class mgrlogin extends NoInputPage {
 			$ret['giveUp'] = true;
 			return $ret;
 		}
-		elseif (!is_numeric($password)) {
-			return $ret;
-		}
-		elseif ($password > 9999 || $password < 1) {
-			return $ret;
-		}
 
 		$db = Database::pDataConnect();
+		$password = $db->escape($password);
 		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
+		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
 		if ($num_rows != 0) {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
-		}
+            $ret['trans_num'] = ReceiptLib::receiptNumber();
+
+            $db = Database::tDataConnect();
+            $db->query("update localtemptrans set trans_status = 'X'");
+            TransRecord::finalizeTransaction(true);
+
+            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                UdpComm::udpSend('goodBeep');
+            }
+		} else {
+            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+        }
 
 		return $ret;
 	}
@@ -152,5 +162,6 @@ class mgrlogin extends NoInputPage {
 	}
 }
 
-new mgrlogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new mgrlogin();
 ?>

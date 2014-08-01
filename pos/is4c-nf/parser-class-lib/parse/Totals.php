@@ -50,6 +50,7 @@ class Totals extends Parser {
 		elseif ($str == "FTTL")
 			PrehLib::finalttl();
 		elseif ($str == "TL"){
+            $CORE_LOCAL->set('End', 0);
 			$chk = PrehLib::ttl();
 			if ($chk !== True)
 				$ret['main_frame'] = $chk;
@@ -95,6 +96,11 @@ class Totals extends Parser {
 			<tr>
 				<td>TL</td>
 				<td>Re-calculate total</td>
+			</tr>
+			<tr>
+				<td>MTL</td>
+				<td>Ontario (Canada) Meal Tax Rebate
+				<br />Remove Provincial tax on food up to \$4 to this point in the transaction.</td>
 			</tr>
 			</table>";
 	}
