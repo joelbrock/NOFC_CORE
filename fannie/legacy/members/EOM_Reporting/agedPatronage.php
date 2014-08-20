@@ -1,8 +1,8 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -10,8 +10,7 @@ if (isset($_GET['excel'])){
 	$_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
 
-include($FANNIE_ROOT.'cache/cache.php');
-$cached_output = get_cache("monthly");
+$cached_output = DataCache::getFile("monthly");
 if ($cached_output){
 	echo $cached_output;
 	exit;
@@ -45,7 +44,7 @@ for($i=0;$i<4;$i++){
 
 $startDate = $lastYear."-".str_pad($lastMonth,2,"0",STR_PAD_LEFT)."-01";
 
-$dlog = select_dlog($startDate,$endDate);
+$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 
 $query = "select 
 	m.card_no,
@@ -142,7 +141,7 @@ while($row = $sql->fetch_row($result)){
 
 $output = ob_get_contents();
 ob_end_clean();
-put_cache('monthly',$output);
+DataCache::putFile('monthly',$output);
 echo $output;
 
 ?>

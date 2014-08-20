@@ -32,7 +32,8 @@
   @class TransRecord
   Defines functions for adding records to the transaction
 */
-class TransRecord extends LibraryClass {
+class TransRecord extends LibraryClass 
+{
 
 /*------------------------------------------------------------------------------
 additem.php is the bread and butter of IT CORE. addItem inserts the information
@@ -104,7 +105,8 @@ signs in
   fewer arguments and adds a specific type of record.
   All such functions should be in this file.
 */
-static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') {
+static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
+{
 	global $CORE_LOCAL;
 	//$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
 
@@ -119,25 +121,18 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		$dbldiscount = (-1 * $dbldiscount);
 		$dblmemDiscount = (-1 * $dblmemDiscount);
 
-		if ($strtransstatus != "V" && $strtransstatus != "D") $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
+		if ($strtransstatus != "V" && $strtransstatus != "D") {
+            $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
+        }
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
 		$CORE_LOCAL->set("autoReprint",1);
 
-		if ($CORE_LOCAL->get("refundDiscountable")==0)
+		if ($CORE_LOCAL->get("refundDiscountable")==0) {
 			$intdiscountable = 0;
+        }
 	}
-
-	/* Nothing in the code can set $_SESSION["void"] to 1
-	elseif ($_SESSION["void"] == 1) {
-		$dblquantity = (-1 * $dblquantity);
-		$dbltotal = (-1 * $dbltotal);
-		$strtransstatus = "V";
-		$_SESSION["void"] = 0;
-	}
-	 */
-
 
 	$intregisterno = $CORE_LOCAL->get("laneno");
 	$intempno = $CORE_LOCAL->get("CashierNo");
@@ -156,11 +151,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
 	}
 
-	// this session variable never gets used
-	//$_SESSION["datetimestamp"] = $datetimestamp;
 	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
 
 	$trans_id = $CORE_LOCAL->get("LastID");
+
+    if (strlen($strdescription) > 30) {
+        $strdescription = substr($strdescription, 0, 30);
+    }
 
 	$values = array(
 		'datetime'	=> $datetimestamp,
@@ -170,8 +167,8 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'upc'		=> MiscLib::nullwrap($strupc),
 		'description'	=> $db->escape($strdescription),
 		'trans_type'	=> MiscLib::nullwrap($strtransType),
-		'trans_subtype'	=> MiscLib::nullwrap($strtranssubType),
-		'trans_status'	=> MiscLib::nullwrap($strtransstatus),
+		'trans_subtype'	=> MiscLib::nullwrap($strtranssubType, true),
+		'trans_status'	=> MiscLib::nullwrap($strtransstatus, true),
 		'department'	=> MiscLib::nullwrap($intdepartment),
 		'quantity'	=> MiscLib::nullwrap($dblquantity),
 		'cost'		=> MiscLib::nullwrap($cost),
@@ -199,7 +196,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
 		);
-	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc"){
+	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc") {
 		unset($values["staff"]);
 		$values["isStaff"] = MiscLib::nullwrap($staff);
 	}
@@ -215,18 +212,105 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("SNR",0);
 
-	if ($intscale == 1)
+	if ($intscale == 1) {
 		$CORE_LOCAL->set("lastWeight",$dblquantity);
+    }
+}
+
+/**
+  Wrapper for addItem that accepted a keyed array instead
+  of many, MANY arguments. All keys are optional and will have
+  the default values listed below if ommitted (read the actual method) 
+  @param $named_params [keyed array]
+  @return [none]
+*/
+static public function addRecord($named_params)
+{
+    // start with default values
+    $new_record = array(
+        'upc'           => '',
+        'description'   => '',
+        'trans_type'    => 'I',
+        'trans_subtype' => '',
+        'trans_status'  => '',
+        'department'    => 0,
+        'quantity'      => 0.0,
+        'unitPrice'     => 0.0,
+        'total'         => 0.0,
+        'regPrice'      => 0.0,
+        'scale'         => 0,
+        'tax'           => 0,
+        'foodstamp'     => 0,
+        'discount'      => 0.0,
+        'memDiscount'   => 0.0,
+        'discountable'  => 0,
+        'discounttype'  => 0,
+        'ItemQtty'      => 0.0,
+        'volDiscType'   => 0,
+        'volume'        => 0,
+        'VolSpecial'    => 0,
+        'mixMatch'      => '',
+        'matched'       => 0,
+        'voided'        => 0,
+        'cost'          => 0.0,
+        'numflag'       => 0,
+        'charflag'      => '',
+    );
+
+    // override defaults with any values specified
+    // in $named_params
+    foreach(array_keys($new_record) as $key) {
+        if (isset($named_params[$key])) {
+            $new_record[$key] = $named_params[$key];
+        }
+    }
+
+    // call addItem()
+    self::addItem(
+        $new_record['upc'],
+        $new_record['description'],
+        $new_record['trans_type'],
+        $new_record['trans_subtype'],
+        $new_record['trans_status'],
+        $new_record['department'],
+        $new_record['quantity'],
+        $new_record['unitPrice'],
+        $new_record['total'],
+        $new_record['regPrice'],
+        $new_record['scale'],
+        $new_record['tax'],
+        $new_record['foodstamp'],
+        $new_record['discount'],
+        $new_record['memDiscount'],
+        $new_record['discountable'],
+        $new_record['discounttype'],
+        $new_record['ItemQtty'],
+        $new_record['volDiscType'],
+        $new_record['volume'],
+        $new_record['VolSpecial'],
+        $new_record['mixMatch'],
+        $new_record['matched'],
+        $new_record['voided'],
+        $new_record['cost'],
+        $new_record['numflag'],
+        $new_record['charflag']
+    );
 }
 
 /**
   Add a item, but not until the end of the transaction
   Use this for records that shouldn't be displayed
+
+  Note: TransRecord::addLogRecord() can be used to add
+  non-display records to the transaction instantly
 */
-static public function addQueued($upc, $description, $numflag=0, $charflag='',$regPrice=0){
+static public function addQueued($upc, $description, $numflag=0, $charflag='',$regPrice=0)
+{
 	global $CORE_LOCAL;
 	$queue = $CORE_LOCAL->get("infoRecordQueue");	
-	if (!is_array($queue)) $queue = array();
+	if (!is_array($queue)) {
+        $queue = array();
+    }
 	$queue[] = array('upc'=>$upc,'description'=>$description,
 			'numflag'=>$numflag,'charflag'=>$charflag,
 			'regPrice'=>$regPrice);
@@ -238,37 +322,47 @@ static public function addQueued($upc, $description, $numflag=0, $charflag='',$r
    to the current transaction then clear the queue.
    Records get trans_type C, trans_status D 
 */
-static public function emptyQueue(){
+static public function emptyQueue()
+{
 	global $CORE_LOCAL;
 	$queue = $CORE_LOCAL->get("infoRecordQueue");	
-	if (!is_array($queue)) $queue = array();
-	foreach($queue as $record){
+	if (!is_array($queue)) {
+        $queue = array();
+    }
+	foreach($queue as $record) {
 		if (!isset($record['upc']) || !isset($record['description']) ||
 		    !isset($record['numflag']) || !isset($record['charflag']) ||
-		    !isset($record['regPrice'])){
+		    !isset($record['regPrice'])) {
 			continue; //skip incomplete
 		}
-		self::addItem($record['upc'], $record['description'], "C", "", "D", 
-			0, 0, 0, 0, $record['regPrice'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, $record['numflag'], $record['charflag']);
+        self::addRecord(array(
+            'upc' => $record['upc'],
+            'description' => $record['description'],
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'regPrice' => $record['regPrice'],
+            'numflag' => $record['numflag'],
+            'charflag' => $record['charflag'],
+        ));
 	}
 	$CORE_LOCAL->set("infoRecordQueue",array());
 }
-
-//________________________________end addItem()
-
-
-//---------------------------------- insert tax line item --------------------------------------
 
 /**
    Add a tax record to the transaction. Amount is
    pulled from session info automatically.
 */
-static public function addtax() {
+static public function addtax() 
+{
 	global $CORE_LOCAL;
 
-	if (True){
-		self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	if (true){
+        self::addRecord(array(
+            'upc' => 'TAX',
+            'description' => 'Tax',
+            'trans_type' => 'A',
+            'total' => $CORE_LOCAL->get('taxTotal'),
+        ));
 		return;
 	}
 
@@ -282,31 +376,30 @@ static public function addtax() {
 	$r = $db->query($q);
 
 	$fsTenderAvailable = null;
-	while($w = $db->fetch_row($r)){
+	while($w = $db->fetch_row($r)) {
 		if ($fsTenderAvailable === null) $fsTenderAvailable = (double)$w['foodstampTender'];
 		
-		// whole amount purchased w/ foodstamps; exempt all fsTax
-		if ($fsTenderAvailable >= $w['fsTaxable']){
+		if ($fsTenderAvailable >= $w['fsTaxable']) {
+            // whole amount purchased w/ foodstamps; exempt all fsTax
 			$w['taxTotal'] -= $w['fsTaxTotal'];
 			$fsTenderAvailable -= $w['fsTaxable'];
-		}
-		// partial; exempt proportionally
-		else if ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']){
+		} else if ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']) {
+            // partial; exempt proportionally
 			$exempt = $fsTenderAvailable * $w['taxrate'];
 			$w['taxTotal'] -= $exempt;
 			$fsTenderAvailable = 0.00;
 		}
 
-		self::addItem("TAX", substr($w['description']." Tax",0,35), "A", "", "", 0, 0, 0, 
-			MiscLib::truncate2($w['taxTotal']), 0, 0, $w['id'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        self::addRecord(array(
+            'upc' => 'TAX',
+            'description' => substr($w['description'] . ' Tax', 0, 30),
+            'trans_type' => 'A',
+            'total' => MiscLib::truncate2($w['taxTotal']),
+            'tax' => $w['id'],
+        ));
 	}
 
 }
-
-//________________________________end addtax()
-
-
-//---------------------------------- insert tender line item -----------------------------------
 
 /**
   Add a tender record to the transaction
@@ -315,41 +408,75 @@ static public function addtax() {
   @param $dbltendered is the amount. Remember that payments are
   <i>negative</i> amounts. 
 */
-static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
-	self::addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+static public function addtender($strtenderdesc, $strtendercode, $dbltendered) 
+{
+    self::addRecord(array(
+        'description' => $strtenderdesc,
+        'trans_type' => 'T',
+        'trans_subtype' => $strtendercode,
+        'total' => $dbltendered,
+    ));
 }
 
-//_______________________________end addtender()
+/**
+  Add a tender record to the transaction with numflag & charflag values
+  @param $strtenderdesc is a description, such as "Credit Card"
+  @param $strtendercode is a 1-2 character code, such as "CC"
+  @param $dbltendered is the amount. Remember that payments are
+      <i>negative</i> amounts. 
+  @param $numflag [int]
+  @param $charflag [1-2 character string]
 
+  Flags are meant to store generic additional data as needed. For example,
+  numflag might contain a record ID corresponding to table(s) of additional
+  processor data on an integrated transaction.
+*/
+static public function addFlaggedTender($strtenderdesc, $strtendercode, $dbltendered, $numflag, $charflag) 
+{
+    self::addRecord(array(
+        'description' => $strtenderdesc,
+        'trans_type' => 'T',
+        'trans_subtype' => $strtendercode,
+        'total' => $dbltendered,
+        'numflag' => $numflag,
+        'charflag' => $charflag,
+    ));
+}
 
 /**
   Add a comment to the transaction
   @param $comment is the comment text. Max length allowed 
   is 30 characters.
 */
-static public function addcomment($comment) {
-	if (strlen($comment) > 30)
+static public function addcomment($comment) 
+{
+	if (strlen($comment) > 30) {
 		$comment = substr($comment,0,30);
+    }
 	$comment = str_replace("\\",'',$comment);
-	self::addItem("",$comment, "C", "CM", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    self::addRecord(array(
+        'description' => $comment,
+        'trans_type' => 'C',
+        'trans_subtype' => 'CM',
+        'trans_status' => 'D',
+    ));
 }
-
-
-//--------------------------------- insert change line item ------------------------------------
 
 /**
   Add a change record (a special type of tender record)
   @param $dblcashreturn the change amount
 */
-static public function addchange($dblcashreturn,$strtendercode='CA') {
+static public function addchange($dblcashreturn,$strtendercode='CA') 
+{
 	global $CORE_LOCAL;
-	self::addItem("", "Change", "T", $strtendercode, "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+    self::addRecord(array(
+        'description' => 'Change',
+        'trans_type' => 'T',
+        'trans_subtype' => $strtendercode,
+        'total' => $dblcashreturn,
+        'voided' => 8,
+    ));
 }
-
-//_______________________________end addchange()
-
-
-//-------------------------------- insert foods stamp change item ------------------------------
 
 /**
   Add a foodstamp change record
@@ -358,152 +485,126 @@ static public function addchange($dblcashreturn,$strtendercode='CA') {
   Please do verify cashback is permitted with EBT transactions
   in your area before using this.
 */
-static public function addfsones($intfsones) {
-	self::addItem("", "FS Change", "T", "FS", "", 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+static public function addfsones($intfsones) 
+{
+    self::addRecord(array(
+        'description' => 'FS Change',
+        'trans_type' => 'T',
+        'trans_subtype' => 'FS',
+        'total' => $intfsones,
+        'voided' => 8,
+    ));
 }
 
-//_______________________________end addfsones()
-
-/**
-  Add end of shift record
-  @deprecated
-*/
-static public function addEndofShift() {
-	self::addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-}
-
-//-------------------------------- insert deli discount (Wedge specific) -----------------------
-
-/**
-  Add Wedge deli discount
-  @deprecated
-*/
-static public function addscDiscount() {
-	global $CORE_LOCAL;
-
-	if ($CORE_LOCAL->get("scDiscount") != 0) {
-		self::addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
-	}
-//	addStaffCoffeeDiscount();
-
-}
-
-/**
-  Add Wedge coffee discount
-  @deprecated
-*/
-static public function addStaffCoffeeDiscount() {
-	global $CORE_LOCAL;
-
-	if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
-		self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
-	}
-}
-
-//_______________________________end addscDiscount()
-
-
-//------------------------------- insert discount line -----------------------------------------
-
-/***** jqh 09/29/05 changed adddiscount function to write the department to localtemptrans *****/
 /**
   Add a "YOU SAVED" record to the transaction. This is just informational
   and will not alter totals.
   @param $dbldiscount discount amount
   @param $department associated department
 */
-static public function adddiscount($dbldiscount,$department) {
+static public function adddiscount($dbldiscount,$department) 
+{
 	global $CORE_LOCAL;
 	$strsaved = "** YOU SAVED $".MiscLib::truncate2($dbldiscount)." **";
-	if ($CORE_LOCAL->get("itemPD") > 0){
+	if ($CORE_LOCAL->get("itemPD") > 0) {
 		$strsaved = sprintf("** YOU SAVED \$%.2f (%d%%) **",
 			$dbldiscount,$CORE_LOCAL->get("itemPD"));
 	}
-	self::addItem("", $strsaved, "I", "", "D", $department, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
+    self::addRecord(array(
+        'description' => $strsaved,
+        'trans_type' => 'I',
+        'trans_status' => 'D',
+        'department' => $department,
+        'voided' => 2,
+    ));
 }
-
-//_____________________________end adddiscount()
-
-
-//------------------------------ insert Food Stamp Tax Exempt line -----------------------------
-
 
 /**
   Add tax exemption for foodstamps
 */
-static public function addfsTaxExempt() {
+static public function addfsTaxExempt() 
+{
 	global $CORE_LOCAL;
 
 	Database::getsubtotals();
-	self::addItem("FS Tax Exempt", " Fs Tax Exempt ", "C", "", "D", 0, 0, $CORE_LOCAL->get("fsTaxExempt"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17);
+    self::addRecord(array(
+        'upc' => 'FS Tax Exempt',
+        'description' => ' Fs Tax Exempt ',
+        'trans_type' => 'C',
+        'trans_status' => 'D',
+        'unitPrice' => $CORE_LOCAL->get('fsTaxExempt'),
+        'voided' => 17,
+    ));
 }
-
-//_____________________________end addfsTaxExempt()
-
-
-//------------------------------ insert 'discount applied' line --------------------------------
 
 /**
   Add a information record showing transaction percent discount
   @param $strl the percentage
 */
-static public function discountnotify($strl) {
+static public function discountnotify($strl) 
+{
 	if ($strl == 10.01) {
 		$strL = 10;
 	}
-	self::addItem("", "** ".$strl."% Discount Applied **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);
+    self::addRecord(array(
+        'description' => '** ' . $strl . '% Discount Applied **',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'voided' => 4,
+    ));
 }
-
-//_____________________________end discountnotify()
-
-
-//------------------------------- insert discount line -----------------------------------------
-
-//------------------------------- insert tax exempt statement line -----------------------------
 
 /**
   Add tax exemption record to transaction
 */
-static public function addTaxExempt() {
+static public function addTaxExempt() 
+{
 	global $CORE_LOCAL;
 
-	self::addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+    self::addRecord(array(
+        'description' => '** Order is Tax Exempt **',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'voided' => 10,
+        'tax' => 9,
+    ));
 	$CORE_LOCAL->set("TaxExempt",1);
 	Database::setglobalvalue("TaxExempt", 1);
 }
 
-//_____________________________end addTaxExempt()
-
-
-//------------------------------ insert reverse tax exempt statement ---------------------------
-
 /**
   Add record to undo tax exemption
 */
-static public function reverseTaxExempt() {
+static public function reverseTaxExempt() 
+{
 	global $CORE_LOCAL;
-	self::addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+    self::addRecord(array(
+        'description' => '** Tax Exemption Reversed **',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'voided' => 10,
+        'tax' => 9,
+    ));
 	$CORE_LOCAL->set("TaxExempt",0);
 	Database::setglobalvalue("TaxExempt", 0);
 }
-
-//_____________________________end reverseTaxExempt()
-
-//------------------------------ insert case discount statement --------------------------------
 
 /** 
   Add an informational record noting case discount
   $CORE_LOCAL setting "casediscount" controls the percentage
   shown
 */
-static public function addcdnotify() {
+static public function addcdnotify() 
+{
 	global $CORE_LOCAL;
-	self::addItem("", "** ".$CORE_LOCAL->get("casediscount")."% Case Discount Applied", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+
+    self::addRecord(array(
+        'description' => '** ' . $CORE_LOCAL->get('casediscount') . '% Case Discount Applied',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'voided' => 6,
+    ));
 }
-
-//____________________________end addcdnotify()
-
-//------------------------------ insert manufacturer coupon statement --------------------------
 
 /**
   Add a manufacturer coupon record
@@ -518,11 +619,28 @@ static public function addcdnotify() {
   all tax jurisdictions. The ini setting 'CouponsAreTaxable'
   controls whether the tax parameter is used.
 */
-static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) {
+static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) 
+{
 	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('CouponsAreTaxable') !== 0)
+	if ($CORE_LOCAL->get('CouponsAreTaxable') !== 0) {
 		$tax = 0;
-	self::addItem($strupc, " * Manufacturers Coupon", "I", "CP", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, $tax, $foodstamp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);	
+    }
+
+    self::addRecord(array(
+        'upc' => $strupc,
+        'description' => ' * Manufacturers Coupon',
+        'trans_type' => 'I',
+        'trans_subtype' => 'CP',
+        'trans_status' => 'C',
+        'department' => $intdepartment,
+        'quantity' => 1,
+        'ItemQtty' => 1,
+        'unitPrice' => $dbltotal,
+        'total' => $dbltotal,
+        'regPrice' => $dbltotal,
+        'tax' => $tax,
+        'foodstamp' => $foodstamp,
+    ));
 }
 
 /**
@@ -531,8 +649,30 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
 */
-static public function addhousecoupon($strupc, $intdepartment, $dbltotal) {
-	self::addItem($strupc, " * Store Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $description='') 
+{
+	global $CORE_LOCAL;
+    if (empty($description)) {
+        $sql = Database::pDataConnect();
+        $fetchQ = "select card_no, coupID, description from houseVirtualCoupons WHERE card_no=" . $CORE_LOCAL->get('memberID');
+        $fetchR = $sql->query($fetchQ);
+        $coupW = $sql->fetch_row($fetchR);
+        $description = ($coupW) ? substr($coupW["description"],0,35) : " * Store Coupon";
+    }
+
+    self::addRecord(array(
+        'upc' => $strupc,
+        'description' => $description,
+        'trans_type' => 'I',
+        'trans_subtype' => 'IC',
+        'trans_status' => 'C',
+        'department' => $intdepartment,
+        'quantity' => 1,
+        'ItemQtty' => 1,
+        'unitPrice' => $dbltotal,
+        'total' => $dbltotal,
+        'regPrice' => $dbltotal,
+    ));
 }
 
 /**
@@ -540,38 +680,49 @@ static public function addhousecoupon($strupc, $intdepartment, $dbltotal) {
   @param $intdepartment POS department
   @param $dbltotal discount amount (should be <b>positive</b>)
 */
-static public function additemdiscount($intdepartment, $dbltotal) {
+static public function additemdiscount($intdepartment, $dbltotal) 
+{
 	$dbltotal *= -1;
-	self::addItem('ITEMDISCOUNT'," * Item Discount", "I", "", "", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+    self::addRecord(array(
+        'upc' => 'ITEMDISCOUNT',
+        'description' => ' * Item Discount',
+        'trans_type' => 'I',
+        'department' => $intdepartment,
+        'quantity' => 1,
+        'unitPrice' => $dbltotal,
+        'total' => $dbltotal,
+        'regPrice' => $dbltotal,
+        'ItemQtty' => 1,
+    ));
 }
-
-
-//___________________________end addCoupon()
-
-//------------------------------ insert tare statement -----------------------------------------
 
 /**
   Add a tare record
   @param $dbltare the tare weight. The weight
   gets divided by 100, so an argument of 5 gives tare 0.05
 */
-static public function addTare($dbltare) {
+static public function addTare($dbltare) 
+{
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("tare",$dbltare/100);
 	$rf = $CORE_LOCAL->get("refund");
 	$rc = $CORE_LOCAL->get("refundComment");
-	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+    self::addRecord(array(
+        'description' => '** Tare Weight ' . $CORE_LOCAL->get('tare') . ' **',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'voided' => 6,
+    ));
 	$CORE_LOCAL->set("refund",$rf);
 	$CORE_LOCAL->set("refundComment",$rc);
 }
-
-//___________________________end addTare()
 
 /**
   Add a virtual coupon by ID
   @param $id identifier in the VirtualCoupon table
 */
-static public function addVirtualCoupon($id){
+static public function addVirtualCoupon($id)
+{
 	global $CORE_LOCAL;
 	$sql = Database::pDataConnect();
 	$fetchQ = "select name,type,value,max from VirtualCoupon WHERE flag=$id";
@@ -582,113 +733,69 @@ static public function addVirtualCoupon($id){
 	$limit = (double)$coupW["max"];
 	$type = $coupW["type"];
 	$desc = substr($coupW["name"],0,35);
-	switch(strtoupper($type)){
-	case 'PERCENT':
-		$val = $val * $CORE_LOCAL->get("discountableTotal");
-		break;
+	switch(strtoupper($type)) {
+        case 'PERCENT':
+            $val = $val * $CORE_LOCAL->get("discountableTotal");
+            break;
 	}
-	if ($limit != 0 && $val > $limit)
+	if ($limit != 0 && $val > $limit) {
 		$val = $limit;
+    }
 	$val *= -1;
 	$upc = str_pad($id,13,'0',STR_PAD_LEFT);
 
-	self::addItem($upc, $desc, "I", "CP", "C", 0, 1, $val, $val, $val, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+    self::addRecord(array(
+        'upc' => $upc,
+        'description' => $desc,
+        'trans_type' => 'I',
+        'trans_subtype' => 'CP',
+        'trans_status' => 'C',
+        'quantity' => 1,
+        'unitPrice' => $val,
+        'total' => $val,
+        'regPrice' => $val,
+        'ItemQtty' => 1,
+    ));
 }
-
-/**
-  Add a deposit
-  @deprecated
-  Use deposit column in products table
-*/
-static public function addDeposit($quantity, $deposit, $foodstamp) {
-
-	$total = $quantity * $deposit;
-	$chardeposit = 100 * $deposit;
-	if($foodstamp == 1){  //  ACG HARDCODED DEPARTMENTS....
-		$dept = 43;
-	}else{
-		$dept = 42;
-	}
-	self::addItem("DEPOSIT" * $chardeposit, "Deposit", "I", "", "", $dept, $quantity, $deposit, $total, $deposit, 0, 0, $foodstamp, 0, 0, 0, 0, $quantity, 0, 0, 0, 0, 0, 0);
-
-}
-
-// ----------------------------- insert transaction discount -----------------------------------
 
 /**
   Add transaction discount record
 */
-static public function addTransDiscount() {
+static public function addTransDiscount() 
+{
 	global $CORE_LOCAL;
-	self::addItem("DISCOUNT", "Discount", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+    self::addRecord(array(
+        'upc' => 'DISCOUNT',
+        'description' => 'Discount',
+        'trans_type' => 'I',
+        'quantity' => 1,
+        'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+        'total' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+        'ItemQtty' => 1,
+    ));
 }
 
 /**
   Add cash drop record
 */
-static public function addCashDrop($amt) {
-	self::addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, MiscLib::truncate2(-1 * $amt), MiscLib::truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
-}
-
-// ---------------------------- insert stamp in activitytemplog --------------------------------
-
-/**
-  Add an activity record to activitytemplog
-  @param $activity identifier
-
-  No one really uses activity logging currently.
-*/
-static public function addactivity($activity) {
-	global $CORE_LOCAL;
-
-	$timeNow = time();
-
-	if ($CORE_LOCAL->get("CashierNo") > 0 && $CORE_LOCAL->get("CashierNo") < 256) {
-		$intcashier = $CORE_LOCAL->get("CashierNo");
-	}
-	else {
-		$intcashier = 0;
-	}
-
-	if ($CORE_LOCAL->get("DBMS") == "mssql") {
-		$strqtime = "select max(datetime) as maxDateTime, getdate() as rightNow from activitytemplog";
-	} else {
-		$strqtime = "select max(datetime) as maxDateTime, now() as rightNow from activitytemplog";
-	}
-
-
-	$db = Database::tDataConnect();
-	$result = $db->query($strqtime);
-
-
-	$row = $db->fetch_array($result);
-
-	if (!$row || !$row[0]) {
-
-		$interval = 0;
-	}
-	else {
-
-		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
-	}
-
-	//$_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
-	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
-
-	$values = array(
-		'datetime'	=> MiscLib::nullwrap($datetimestamp),
-		'LaneNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("laneno")),
-		'CashierNo'	=> MiscLib::nullwrap($intcashier),
-		'TransNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("transno")),
-		'Activity'	=> MiscLib::nullwrap($activity),
-		$db->identifier_escape('Interval')	=> MiscLib::nullwrap($interval)
-		);
-	$result = $db->smart_insert("activitytemplog",$values);
+static public function addCashDrop($amt) 
+{
+    self::addRecord(array(
+        'upc' => 'DROP',
+        'description' => 'Cash Drop',
+        'trans_type' => 'I',
+        'trans_status' => 'X',
+        'quantity' => 1,
+        'unitPrice' => MiscLib::truncate2(-1 * $amt),
+        'total' => MiscLib::truncate2(-1 * $amt),
+        'ItemQtty' => 1,
+        'charflag' => 'CD',
+    ));
 }
 
 /**
   Add a log entry to the transaction table.
-  Log records do not appear onscreen on on receipts.
+  Log records do not appear onscreen or on receipts.
 
   @param $opts keyed array. Currently valid keys are:
    - upc
@@ -705,8 +812,12 @@ static public function addactivity($activity) {
   total and regPrice (respectively). The other values go in the
   correspondingly named columns.
 */
-static public function add_log_record($opts){
-	if (!is_array($opts)) $opts = array();
+static public function addLogRecord($opts)
+{
+	if (!is_array($opts)) {
+        $opts = array();
+    }
+
 	$upc = isset($opts['upc']) ? $opts['upc'] : '';
 	$desc = isset($opts['description']) ? $opts['description'] : '';
 	$dept = isset($opts['department']) ? $opts['department'] : 0;
@@ -714,33 +825,67 @@ static public function add_log_record($opts){
 	$cflag = isset($opts['charflag']) ? $opts['charflag'] : '';
 	$total = isset($opts['amount1']) ? $opts['amount1'] : 0;
 	$regPrice = isset($opts['amount2']) ? $opts['amount2'] : 0;
-	
-	self::addItem($upc, $desc, 'L', 'OG', 'D', $dept, 
-		0, // quantity
-		0, // unitPrice 
-		$total, 
-		$regPrice, 
-		0, // scale 
-		0, // tax 
-		0, //foodstamp
-		0, //discount
-		0, //memDiscount 
-		0, //discountable
-		0, //discounttype
-		0, //ItemQtty
-		0, //volDiscType
-		0, //volume
-		0, //VolSpecial
-		'', //mixMatch
-		0, //matched
-		0, //voided
-		0, //cost 
-		$nflag, $cflag);
+
+    self::addRecord(array(
+        'upc' => $upc,
+        'description' => $desc,
+        'trans_type' => 'L',
+        'trans_subtype' => 'OG',
+        'trans_status' => 'X',
+        'department' => $dept,
+        'total' => $total,
+        'regPrice' => $regPrice,
+        'numflag' => $nflag,
+        'charflag' => $cflag,
+    ));
 }
 
-// ------------------------------------------------------------------------
+static public function add_log_record($opts)
+{
+    self::addLogRecord($opts);
+}
 
+/**
+  Finish the current transaction
+  @param $incomplete [boolean] optional, default false
+
+  This method:
+  1) Adds tax and discount lines if transaction is complete
+     (i.e., $incomplete == false)
+  2) Rotates data out of localtemptrans
+  3) Advances trans_no variable to next available value
+
+  This method replaces older ajax-end.php / end.php operations
+  where the receipt was printed first and then steps 1-3
+  above happened. This method should be called BEFORE printing
+  a receipt. Receipts are now always printed via localtranstoday.
+*/
+static public function finalizeTransaction($incomplete=false)
+{
+    global $CORE_LOCAL;
+    if (!$incomplete) {
+        self::addtransDiscount();
+        self::addTax();
+        $taxes = Database::LineItemTaxes();
+        foreach($taxes as $tax) {
+            self::addLogRecord(array(
+                'upc' => 'TAXLINEITEM',
+                'description' => $tax['description'],
+                'numflag' => $tax['rate_id'],
+                'amount2' => $tax['amount'],
+            ));
+        }
+    }
+
+    if (Database::rotateTempData()) { // rotate data
+        Database::clearTempTables();
+    }
+
+    // advance trans_no value
+    $nextTransNo = Database::gettransno($CORE_LOCAL->get('CashierNo'));
+    $CORE_LOCAL->set('transno', $nextTransNo);
+    Database::setglobalvalue('TransNo', $nextTransNo);
+}
 
 }
 
-?>

@@ -72,9 +72,37 @@ class QMDisplay extends NoInputPage {
 					&&
 					(prevKey==99 || prevKey==67)
 				){
+					// CL or cl
+					// pressed clear
 					$('#doClear').val('1');
 				}
+				if (
+					(event.which==77 || event.which==109)
+					&&
+					(prevKey==81 || prevKey==113)
+				){
+					// QM or qm
+					// sticky quick menu button?
+					// ignore the next enter key
+					form_disabled = -1;
+				}
 				else if (event.which==13 && form_disabled == 0){
+					// enter - submit form
+					form_disabled=1;
+					$('#qmform').submit();
+				}
+				else if (event.which==13 && form_disabled == -1){
+					// enter - ignore
+					// but re-enable form
+					form_disabled=0;
+				}
+				else if (event.which >= 49 && event.which <= 57 && form_disabled == 0){
+					// 1-9 key - submit form
+					form_disabled=1;
+					$('#qmform').submit();
+				}
+				else if (event.which >= 97 && event.which <= 105 && form_disabled == 0){
+					// 1-9 key (numpad) - submit form
 					form_disabled=1;
 					$('#qmform').submit();
 				}
@@ -125,17 +153,35 @@ class QMDisplay extends NoInputPage {
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
+        /**
+          Where can the menu be found?
+        */
 		$my_menu = array();
 		if (is_array($CORE_LOCAL->get('qmNumber'))){
+            /** Calling code provided the menu array via session data */
 			$my_menu = $CORE_LOCAL->get('qmNumber');
-		}
-		else {
+		} else if (file_exists(realpath(dirname(__FILE__)."/quickmenus/".$CORE_LOCAL->get("qmNumber").".php"))) {
+            /** Old way:
+                Menu is defined in a PHP file
+            */
 			include(realpath(dirname(__FILE__)."/quickmenus/"
 				.$CORE_LOCAL->get("qmNumber").".php"));
-		}
+		} else {
+            /** New way:
+                Get menu options from QuickLookups table
+            */
+            $db = Database::pDataConnect();
+            if ($db->table_exists('QuickLookups')) {
+                $model = new QuickLookupsModel($db);
+                $model->lookupSet($CORE_LOCAL->get('qmNumber'));
+                foreach($model->find(array('sequence', 'label')) as $obj) {
+                    $my_menu[$obj->label()] = $obj->action();
+                }
+            }
+        }
 
 		echo '<br /><br />';
-		echo '<select name="ddQKselect" id="ddQKselect" style="width:200px;" size="10"
+		echo '<select name="ddQKselect" id="ddQKselect" style="width:380px;" size="10"
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
 		foreach($my_menu as $label => $value){
@@ -145,7 +191,6 @@ class QMDisplay extends NoInputPage {
 		}
 		echo '</select>';
 
-		echo "</div>";
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
 		echo "</form>";
 		echo "</div>";

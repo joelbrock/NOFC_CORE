@@ -22,29 +22,30 @@
 *********************************************************************************/
 
 require('../../config.php');
-require($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $page_title = 'Fannie - Sale Signs';
 $header = 'Sale Signs';
 include($FANNIE_ROOT.'src/header.html');
 
 if (!isset($_REQUEST['signtype'])){
-	echo '<ul>';
-	$dh = opendir('enabled');
-	while(($file=readdir($dh)) !== False){
-		if ($file[0] == ".") continue;
-		if (substr($file,-4) != ".php") continue;
-		printf('<li><a href="index.php?action=start&signtype=%s">%s</a></li>',
-			substr($file,0,strlen($file)-4),
-			substr($file,0,strlen($file)-4)
-		);
-	}
-	echo '</ul>';
+    echo '<ul>';
+    $dh = opendir('enabled');
+    while(($file=readdir($dh)) !== False){
+        if ($file[0] == ".") continue;
+        if (substr($file,-4) != ".php") continue;
+        printf('<li><a href="index.php?action=start&signtype=%s">%s</a></li>',
+            substr($file,0,strlen($file)-4),
+            substr($file,0,strlen($file)-4)
+        );
+    }
+    echo '</ul>';
 }
 else {
-	$class = $_REQUEST['signtype'];
-	include('enabled/'.$class.'.php');
-	$obj = new $class();
+    $class = $_REQUEST['signtype'];
+    include('enabled/'.$class.'.php');
+    $obj = new $class();
 }
 
 

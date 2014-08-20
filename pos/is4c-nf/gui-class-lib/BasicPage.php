@@ -123,9 +123,9 @@ class BasicPage {
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}/css/pos.css\">";
 		// include store css file if it exists
-		if (file_exists(dirname(__FILE__).'/../store.css')){
+		if (file_exists(dirname(__FILE__).'/../css/store.css')){
 			echo "<link rel=\"stylesheet\" type=\"text/css\"
-			    href=\"{$my_url}/store.css\">";
+			    href=\"{$my_url}/css/store.css\">";
 		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}/js/jquery.js\"></script>";
@@ -244,10 +244,10 @@ class BasicPage {
 				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if ($CORE_LOCAL->get("receiptToggle")==1){
-				echo "<img alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img id=\"receipticon\" alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
-				echo "<img alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
@@ -370,7 +370,7 @@ class BasicPage {
 			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 			<div id="scaleIconBox">
-			<?php echo DisplayLib::termdisplaymsg(); ?>
+			<?php echo DisplayLib::drawNotifications(); ?>
 			</div>
 		</div>
 		<?php
@@ -383,11 +383,20 @@ class BasicPage {
 	  Outputs the javascript used to poll for scale
 	  input and activates it on page load.
 	*/
-	function scanner_scale_polling($include_scans=True){
-		if (!$include_scans) return '';
+	function scanner_scale_polling($include_scans=true)
+    {
+        global $CORE_LOCAL;
+		if (!$include_scans) {
+            return '';
+        }
+        $scaleDriver = $CORE_LOCAL->get("scaleDriver");
+        if ($scaleDriver == '' || !class_exists($scaleDriver)) {
+            return '';
+        }
+        $scaleObj = new $scaleDriver();
 		?>
 		<script type="text/javascript"
-			src="<?php echo $this->page_url; ?>js/poll-scale.js">
+			src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">
 		</script>
 		<?php
 		$this->add_onload_command("pollScale('".$this->page_url."');\n");
@@ -420,7 +429,8 @@ class BasicPage {
 				echo '<ul><li>';
 				if(!empty($s['class'])) echo $s['class'].'::';
 				echo $s['function'].'()';
-				echo '<li>Line '.$s['line'].', '.$s['file'];
+				if (isset($s['line']))
+					echo '<li>Line '.$s['line'].', '.$s['file'];
 			}
 			foreach($stack as $s) echo '</ul>';
 		}
@@ -428,12 +438,42 @@ class BasicPage {
 			header("Location: ".$url);
 	}
 
+    /**
+      Callback for javascript scanner-scale polling
+      This one sends scan input to a form field on the
+      page and other inputs through the normal parser
+    */
 	function default_parsewrapper_js($input="reginput",$form="formlocal"){
 	?>
+    <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 	<script type="text/javascript">
-	function parseWrapper(str){
-		$('#<?php echo $input; ?>').val(str);
-		$('#<?php echo $form; ?>').submit();
+	function parseWrapper(str) {
+        if (/^\d+$/.test(str)) {
+            $('#<?php echo $input; ?>').val(str);
+            $('#<?php echo $form; ?>').submit();
+        } else {
+            runParser(str, '<?php echo $this->page_url; ?>');
+        }
+	}
+	</script>
+	<?php
+	}
+
+    /**
+      Callback for javascript scanner-scale polling
+      This one ignores scan input and runs anything
+      else through the parser
+    */
+	function noscan_parsewrapper_js() {
+	?>
+    <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
+	<script type="text/javascript">
+	function parseWrapper(str) {
+        if (/^\d+$/.test(str)) {
+            // do nothing
+        } else {
+            runParser(str, '<?php echo $this->page_url; ?>');
+        }
 	}
 	</script>
 	<?php

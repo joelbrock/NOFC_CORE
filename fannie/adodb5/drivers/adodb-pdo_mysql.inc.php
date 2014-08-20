@@ -14,7 +14,7 @@ if (!class_exists('ADODB_pdo'))
 	include(dirname(__FILE__).'/adodb-pdo.inc.php');
 
 class ADODB_pdo_mysql extends ADODB_pdo {
-	var $metaTablesSQL = "SHOW TABLES";	
+	var $metaTablesSQL = "SHOW FULL TABLES";	
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
 	var $sysDate = 'CURDATE()';
 	var $sysTimeStamp = 'NOW()';
@@ -34,8 +34,14 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 	}
 
 	function _connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist=false){
-		if (substr($argDSN,0,6) !== "mysql:")
-			$argDSN = "mysql:host=".$argDSN;
+		if (substr($argDSN,0,6) !== "mysql:"){
+			if (strpos($argDSN, ':') > 0){
+				list($host, $port) = explode(':', $argDSN, 2);
+				$argDSN = 'mysql:host='.$host.';port='.$port;
+			}
+			else
+				$argDSN = "mysql:host=".$argDSN;
+		}
 		return parent::_connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist);
 	}
 	

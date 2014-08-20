@@ -21,28 +21,26 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ItemImportIndex extends FanniePage {
-	protected $title = "Fannie :: Product Tools";
-	protected $header = "Import Product Information";
+    protected $title = "Fannie :: Product Tools";
+    protected $header = "Import Product Information";
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="DepartmentImportPage.php">Departments</a></li>
-		<li><a href="SubdeptImportPage.php">Subdepartments</a></li>
-		<li><a href="ProductImportPage.php">Products</a></li>
-		<li><a href="UploadAnyFile.php">Upload a file</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li><a href="DepartmentImportPage.php">Departments</a></li>
+        <li><a href="SubdeptImportPage.php">Subdepartments</a></li>
+        <li><a href="ProductImportPage.php">Products</a></li>
+        <li><a href="UploadAnyFile.php">Upload a file</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new ItemImportIndex();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

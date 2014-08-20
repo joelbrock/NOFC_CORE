@@ -3,27 +3,28 @@
 Table: efsnetRequest
 
 Columns:
-	date int
-	cashierNo int
-	laneNo int
-	transNo int
-	transID int
-	datetime datetime
-	refNum varchar
-	live tinyint
-	mode varchar
-	amount double
-	PAN varchar
-	issuer varchar
-	name varchar
-	manual tinyint
-	sentPAN tinyint
-	sentExp tinyint
-	sentTr1 tinyint
-	sentTr2 tinyint	
+    date int
+    cashierNo int
+    laneNo int
+    transNo int
+    transID int
+    datetime datetime
+    refNum varchar
+    live tinyint
+    mode varchar
+    amount double
+    PAN varchar
+    issuer varchar
+    name varchar
+    manual tinyint
+    sentPAN tinyint
+    sentExp tinyint
+    sentTr1 tinyint
+    sentTr2 tinyint 
+    efsnetRequestID int
 
 Depends on:
-	none
+    none
 
 Use:
 This table logs information that is
@@ -54,27 +55,34 @@ sent. Most gateways will accept PAN + expiration
 date, or either track. Sending both tracks is
 usually fine; I've never seen a system where
 you send all 4 pieces of card info.
+
+efsnetRequestID is an incrementing ID columns. This
+is unique at a lane level but not an overall system
+level since different lanes will increment through
+the same ID values. The combination of laneNo and
+efsnetRequestID should be unique though.
 */
 $CREATE['trans.efsnetRequest'] = "
-	CREATE TABLE efsnetRequest (
-		date int ,
-		cashierNo int ,
-		laneNo int ,
-		transNo int ,
-		transID int ,
-		datetime datetime ,
-		refNum varchar (50) ,
-		live tinyint ,
-		mode varchar (32) ,
-		amount double ,
-		PAN varchar (19) ,
-		issuer varchar (16) ,
-		name varchar (50) ,
-		manual tinyint ,
-		sentPAN tinyint ,
-		sentExp tinyint ,
-		sentTr1 tinyint ,
-		sentTr2 tinyint 
-	)
+    CREATE TABLE efsnetRequest (
+        date int ,
+        cashierNo int ,
+        laneNo int ,
+        transNo int ,
+        transID int ,
+        datetime datetime ,
+        refNum varchar (50) ,
+        live tinyint ,
+        mode varchar (32) ,
+        amount double ,
+        PAN varchar (19) ,
+        issuer varchar (16) ,
+        name varchar (50) ,
+        manual tinyint ,
+        sentPAN tinyint ,
+        sentExp tinyint ,
+        sentTr1 tinyint ,
+        sentTr2 tinyint ,
+        efsnetRequestID INT
+    )
 ";
 ?>

@@ -63,6 +63,11 @@ class qtty2 extends BasicPage {
 		return True;
 	}
 
+    function head_content()
+    {
+        $this->noscan_parsewrapper_js();
+    }
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header();
@@ -89,6 +94,7 @@ class qtty2 extends BasicPage {
 	} // END true_body() FUNCTION
 }
 
-new qtty2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new qtty2();
 
 ?>

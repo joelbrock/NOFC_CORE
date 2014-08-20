@@ -1,8 +1,8 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -10,8 +10,7 @@ if (isset($_GET['excel'])){
 	$_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
 
-include($FANNIE_ROOT.'cache/cache.php');
-$cached_output = get_cache("monthly");
+$cached_output = DataCache::getFile("monthly");
 if ($cached_output){
 	echo $cached_output;
 	exit;
@@ -40,7 +39,7 @@ $query = "select m.card_no,CONCAT(c.FirstName,' ',c.LastName),m.start_date,
 	from memDates as m left join
 	custdata as c on c.CardNo=m.card_no and c.personNum=1
 	left join is4c_trans.stockpurchases as s on m.card_no=s.card_no
-	left join is4c_trans.newBalanceStockToday_test as n on m.card_no=n.memnum
+	left join is4c_trans.equity_live_balance as n on m.card_no=n.memnum
 	where ".$sql->monthdiff($sql->now(),'DATE_ADD(m.start_date,INTERVAL 2 YEAR)')." = -1
 	and c.Type='PC' and n.payments < 100
 	order by m.card_no,s.tdate";
@@ -106,7 +105,7 @@ echo "</table>";
 
 $output = ob_get_contents();
 ob_end_clean();
-put_cache('monthly',$output);
+DataCache::putFile('monthly',$output);
 echo $output;
 
 ?>

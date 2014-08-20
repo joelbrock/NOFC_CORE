@@ -30,42 +30,76 @@
    Classically, this is pricemethod=0
 */
 
-class BasicPM extends PriceMethod {
+class BasicPM extends PriceMethod 
+{
 
-	function addItem($row,$quantity,$priceObj){
-		if ($quantity == 0) return false;
+    private $error_msg = '';
 
-		$pricing = $priceObj->priceInfo($row,$quantity);
+    function addItem($row,$quantity,$priceObj)
+    {
+        global $CORE_LOCAL;
+        if ($quantity == 0) return False;
 
-		TransRecord::addItem($row['upc'],
-			$row['description'],
-			'I',
-			' ',
-			' ',
-			$row['department'],
-			$quantity,
-			$pricing['unitPrice'],
-			MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-			$pricing['regPrice'],
-			$row['scale'],
-			$row['tax'],
-			$row['foodstamp'],
-			$pricing['discount'],
-			$pricing['memDiscount'],
-			$row['discount'],
-			$row['discounttype'],
-			$quantity,
-			$row['pricemethod'],
-			$row['quantity'],
-			$row['groupprice'],
-			$row['mixmatchcode'],
-			0,
-			0,
-			(isset($row['cost'])?$row['cost']*$quantity:0.00),
-			(isset($row['numflag'])?$row['numflag']:0),
-			(isset($row['charflag'])?$row['charflag']:'')
-		);
-	}
+        // enforce limit on discounting sale items
+        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
+
+        /*
+          Use "quantity" field in products record as a per-transaction
+          limit. This is analogous to a similar feature with sale items.
+        */
+        if (!$priceObj->isSale() && $row['quantity'] > 0){
+            $db = Database::tDataConnect();
+            $query = "SELECT SUM(quantity) as qty FROM localtemptrans
+                WHERE upc='{$row['upc']}'";
+            $result = $db->query($query);
+            if ($db->num_rows($result) > 0){
+                $chkRow = $db->fetch_row($result);
+                if (($chkRow['qty']+$quantity) > $row['quantity']){
+                    $this->error_msg = _("item only allows ")
+                            .$row['quantity']
+                            ._(" per transaction");
+                    return False;
+                }
+            }
+        }
+
+        $pricing = $priceObj->priceInfo($row,$quantity);
+
+        TransRecord::addRecord(array(
+            'upc' => $row['upc'],
+            'description' => $row['description'],
+            'trans_type' => 'I',
+            'department' => $row['department'],
+            'quantity' => $quantity,
+            'unitPrice' => $pricing['unitPrice'],
+            'total' => MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+            'regPrice' => $pricing['regPrice'],
+            'scale' => $row['scale'],
+            'tax' => $row['tax'],
+            'foodstamp' => $row['foodstamp'],
+            'discount' => $pricing['discount'],
+            'memDiscount' => $pricing['memDiscount'],
+            'discountable' => $row['discount'],
+            'discounttype' => $row['discounttype'],
+            'ItemQtty' => $quantity,
+            'volDiscType' => $row['pricemethod'],
+            'volume' => $row['quantity'],
+            'VolSpecial' => $row['groupprice'],
+            'mixMatch' => $row['mixmatchcode'],
+            'cost' => (isset($row['cost'])?$row['cost']*$quantity:0.00),
+            'numflag' => (isset($row['numflag'])?$row['numflag']:0),
+            'charflag' => (isset($row['charflag'])?$row['charflag']:'')
+        ));
+
+        return true;
+    }
+
+    function errorInfo()
+    {
+        return $this->error_msg;
+    }
 }
 
-?>

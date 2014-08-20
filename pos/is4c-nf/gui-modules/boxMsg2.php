@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicPage {
@@ -61,6 +59,7 @@ class boxMsg2 extends BasicPage {
 		}
 		</script>
 		<?php
+        $this->noscan_parsewrapper_js();
 	}
 
 	function preprocess(){
@@ -77,7 +76,7 @@ class boxMsg2 extends BasicPage {
 		}
 		return True;
 	}
-	
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header("onsubmit=\"return submitWrapper();\"");
@@ -104,6 +103,7 @@ class boxMsg2 extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new boxMsg2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new boxMsg2();
 
 ?>

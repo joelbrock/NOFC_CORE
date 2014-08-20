@@ -20,27 +20,6 @@
 
 *********************************************************************************/
 
-function saveScript(vID){
-	var scriptName = $('#vscript').val();
-
-	if (vscript == ''){
-		return;
-	}
-
-	$.ajax({
-		url: 'ajax.php',
-		type: 'POST',
-		timeout: 1000,
-		data: 'vid='+vID+'&script='+scriptName+'&action=saveScript',
-		error: function(){
-			alert('Error saving script name');
-		},
-		success: function(resp){
-			alert('Saved as '+scriptName);
-		}
-	});
-}
-
 function vendorchange(){
 	var vID = $('#vendorselect').val();
 
@@ -62,15 +41,34 @@ function vendorchange(){
 	$.ajax({
 		url: 'VendorIndexPage.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'vid='+vID+'&action=vendorDisplay',
 		error: function(){
 		alert('Error loading XML document');
 		},
 		success: function(resp){
 			$('#contentarea').html(resp);
+            $('.delivery').change(saveDelivery);
 		}
 	});
+}
+
+function saveDelivery()
+{
+    var data = $('.delivery').serialize();
+	var vid = $('#vendorselect').val();
+    $.ajax({
+        url: 'VendorIndexPage.php',
+        data: 'action=saveDelivery&vID='+vid+'&'+data,
+        method: 'post',
+        dataType: 'json',
+        success: function(resp){
+            if (resp.next && resp.nextNext) {
+                $('#nextDelivery').html(resp.next);
+                $('#nextNextDelivery').html(resp.nextNext);
+            }
+        }
+    });
 }
 
 function newvendor(){
@@ -78,7 +76,7 @@ function newvendor(){
 	$.ajax({
 		url: 'VendorIndexPage.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'name='+name+'&action=newVendor',
 		error: function(){
 		alert('Error loading XML document');
