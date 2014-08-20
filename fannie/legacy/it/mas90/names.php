@@ -11,9 +11,9 @@ $Q = "\"";
 $NL = "\r\n";
 
 $query = "select m.card_no,
-	  concat(c.FirstName,' ',c.LastName),
+	  c.FirstName+' '+c.LastName,
 	  m.street,
-	  '',
+	'',
 	  m.city,
 	  m.state,
 	  m.zip,
