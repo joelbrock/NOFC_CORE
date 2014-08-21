@@ -37,7 +37,7 @@ class WFCFixup extends PreParser {
             // stupid Herb Pharm coupon. Expires 30Apr14
             $this->remainder = '59070099287';
             return true;
-        } else if ($str == 'MA' || $str == 'OB') {
+        } else if (/*$str == 'MA' ||*/ $str == 'OB') {
             // re-write old WFC quarterly coupon as houseCoupon UPC
             $this->remainder = '0049999900001';
             return true;
