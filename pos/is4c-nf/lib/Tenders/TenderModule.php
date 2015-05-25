@@ -25,7 +25,7 @@
   @class TenderModule
   Base class for modular tenders
 */
-class TenderModule 
+class TenderModule
 {
 
     protected $tender_code;
@@ -52,7 +52,7 @@ class TenderModule
 
         $db = Database::pDataConnect();
         $query = "select TenderID,TenderCode,TenderName,TenderType,
-            ChangeMessage,MinAmount,MaxAmount,MaxRefund from 
+            ChangeMessage,MinAmount,MaxAmount,MaxRefund from
             tenders where tendercode = '".$this->tender_code."'";
         $result = $db->query($query);
 
@@ -96,18 +96,22 @@ class TenderModule
             return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
-        } elseif ((($this->amount < ($CORE_LOCAL->get("amtdue") - 0.005)) || ($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)))
-                     && $CORE_LOCAL->get("amtdue") < 0 
-                     && $this->amount !=0){
+        } elseif ($CORE_LOCAL->get('fntlflag') && $CORE_LOCAL->get('fsEligible') < 0 && abs($this->amount - $CORE_LOCAL->get('fsEligible')) < 0.005) {
+             // not actually an error
+             // if return tender exactly matches FS elgible return amount
+             // pass through so the subsequent exact amount error
+             // does not occur.
+        } elseif (abs($this->amount - $CORE_LOCAL->get('amtdue')) > 0.005 && $CORE_LOCAL->get("amtdue") < 0
+                  && $this->amount !=0) {
             // the return tender needs to be exact because the transaction state can get weird.
             return DisplayLib::xboxMsg(_("return tender must be exact"));
-        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) { 
-            return DisplayLib::xboxMsg(_("Why are you using a negative number for a positve sale?"));
+        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) {
+            return DisplayLib::xboxMsg(_("Why are you using a negative number for a positive sale?"));
         }
 
         return true;
     }
-    
+
     /**
       Set up state and redirect if needed
       @return True or a URL to redirect
@@ -183,7 +187,7 @@ class TenderModule
     /**
       Prompt for the cashier when no total is provided
       @return string URL
-    
+
       Typically this sets up session variables and returns
       the URL for boxMsg2.php.
     */
@@ -212,4 +216,3 @@ class TenderModule
     }
 
 }
-
