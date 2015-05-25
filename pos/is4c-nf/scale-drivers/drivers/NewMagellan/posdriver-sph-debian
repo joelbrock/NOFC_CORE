@@ -49,7 +49,7 @@
 NAME=posdriver-sph-debian
 LHOME=/var/run/${NAME}
 KILL=/bin/kill
-DHOME=/pos/CORE/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+DHOME=/pos/NOFC_CORE/pos/is4c-nf/scale-drivers/drivers/NewMagellan
 
 
 # --FUNCTIONS - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,7 +118,7 @@ start(){
 		chmod 666 /dev/ttyS0
 
 		# Start the driver in the background
-		mono pos.exe &> ${LHOME}/pos.log &
+		mono pos.exe -v &> ${LHOME}/pos.log &
 		# Store the PID of the startup process.
 		MYPID=$!
 		echo $MYPID > ${LHOME}/sph.pid

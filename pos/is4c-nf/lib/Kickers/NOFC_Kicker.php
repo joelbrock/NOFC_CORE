@@ -30,7 +30,7 @@ class NOFC_Kicker extends Kicker {
     function doKick(){
         global $CORE_LOCAL;
         $db = Database::tDataConnect();
-
+/*
         $query = "SELECT trans_id FROM localtemptrans WHERE 
             (trans_subtype = 'CA' AND total <> 0) 
             OR description LIKE 'Stamp%'";
@@ -39,7 +39,8 @@ class NOFC_Kicker extends Kicker {
         $num_rows = $db->num_rows($result);
 
         $ret = ($num_rows > 0) ? True : False;
-
+*/
+$ret = True;
         // use session to override default behavior
         // based on specific cashier actions rather
         // than transaction state
