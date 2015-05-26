@@ -34,7 +34,8 @@ class FoodstampAmountOptionalTender extends FoodstampTender
 
     public function defaultTotal()
     {
-        return CoreLocal::get('fsEligible');
+	global $CORE_LOCAL;
+        return $CORE_LOCAL->get('fsEligible');
     }
 }
 
